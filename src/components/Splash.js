@@ -46,7 +46,6 @@ const StyledSplash = styled.div`
 `
 const Title = styled.h1`
 	font-size: 40px;
-	color: #FFF;
 	font-weight: 500;
 		font-family: 'Merriweather', serif;
 `
