@@ -27,7 +27,9 @@ const Abt = styled.div`
 	color: #CCCECE;
 	h1 {
 		font-size: 30px;
+		color: #FFF;
 		margin-bottom: 80px;
+		border-bottom: 1px solid white;
 	}
 	img {
 		width: 200px;

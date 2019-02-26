@@ -106,7 +106,8 @@ const Burger = styled.div`
 const SmallNavLinks = styled.div`
 	display: ${props => props.showMenu ? 'flex' : 'none'};
 	justify-content: space-evenly;
-	flex-direction: column;
+	flex-direction: row;
+	width: 300px;
 `
 
 const Nav = styled.div`

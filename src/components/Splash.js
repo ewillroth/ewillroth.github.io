@@ -33,7 +33,7 @@ const StyledSplash = styled.div`
 	top: -80px;
 	color: #CCCECE;
 	@media (max-width: 700px) {
-		height: 500px;
+		height: 510px;
 	}
 	i {
 		margin-top: 20px;
@@ -46,6 +46,7 @@ const StyledSplash = styled.div`
 `
 const Title = styled.h1`
 	font-size: 40px;
+	color: #FFF;
 	font-weight: 500;
 		font-family: 'Merriweather', serif;
 `

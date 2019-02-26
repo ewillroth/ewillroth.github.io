@@ -114,8 +114,10 @@ const Skill = styled.div`
 	align-items: center;
 	color: #CCCECE;
 		h1 {
+			color: #FFF;
 			font-size: 30px;
 			margin-bottom: 80px;
+			border-bottom: 1px solid white;
 		}
 `
 

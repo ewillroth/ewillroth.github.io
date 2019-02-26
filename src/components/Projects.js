@@ -56,8 +56,10 @@ const Proj = styled.div`
 	color: #CCCECE;
 	font-family: 'Nunito', sans-serif;
 		h1 {
+			color: #FFF;
 			font-size: 30px;
 			margin-bottom: 60px;
+			border-bottom: 1px solid white;
 		}
 		.projName {
 			font-size: 26px;
