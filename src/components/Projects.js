@@ -9,12 +9,13 @@ const Projects = () => {
 			<h1>Projects</h1>
 				<Project>
 					<p className="projName">Ordeer</p>
-					<p>Group project built in 3 weeks with two other students</p>
+					<p>An online ordering platform for restaurants</p>
 					<div>
 						<a href='http://www.ordeer.net'>
-							<img width='380px' src={ordeerLanding} alt="project landing page" />
+							<img src={ordeerLanding} alt="project landing page" />
 						</a>
 						<ul>
+							<li>Group project built in 3 weeks with two other students</li>
 							<li>Contains only functional components to utilize React Hooks</li>
 							<li>Learned & implemented Material-UI to create display cards for each menu item</li>
 							<li>I focused on front-end code including the registration page, order page and Jest testing</li>
@@ -27,7 +28,7 @@ const Projects = () => {
 					<p>A tool to help groups make decisions</p>
 					<div>
 						<a href='https://settleit.app'>
-							<img width='380px' src={settleLanding} alt="project landing page" />
+							<img src={settleLanding} alt="project landing page" />
 						</a>
 						<ul>
 							<li>Awarded most technical in my cohort</li>
@@ -73,6 +74,9 @@ const Project = styled.div`
 	justify-content: center;
 	align-items: center;
 	width: 100%
+	img {
+		width: 380px;
+	}
 	div {
 		display: flex;
 		flex-direction: row;
@@ -90,6 +94,9 @@ const Project = styled.div`
 			}
 			p {
 				text-align: center;
+			}
+			img {
+				width: 280px;
 			}
 		}
 	}

@@ -124,6 +124,9 @@ const IconContainer = styled.div`
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-evenly;
+	@media (max-width: 700px) {
+		width: 85%;
+	}
 `
 
 const Icon = styled.div`
@@ -135,7 +138,6 @@ const Icon = styled.div`
 	justify-content: center;
 	font-family: 'Nunito', sans-serif;
 	align-items: center;
-
 	img {
 		width: 150px;
 		height: 150px;
@@ -146,13 +148,16 @@ const Icon = styled.div`
 		margin: 15px;
 	}
 	@media (max-width: 700px) {
+		height: 120px;
+		width: 120px;
+		margin: 10px
 		img {
-				width: 120px;
-				height: 120px;
+				width: 100px;
+				height: 100px;
 		}
 		.smallimg {
-				width: 90px;
-				height: 90px;
+				width: 80px;
+				height: 80px;
 				margin: 30px;
 			}
 	}

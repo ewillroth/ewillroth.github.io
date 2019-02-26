@@ -10,19 +10,19 @@ const Contact = () => {
 		<Cont id="contact">
 			<ContactCard>
 				<a href="tel:+12816852086"><img src={phoneIcon} alt="phone"></img></a>
-				<p>281-685-2086</p>
+				<p className="contactText" >281-685-2086</p>
 			</ContactCard>
 			<ContactCard>
 				<a href="mailto:ewillroth@gmail.com"><img alt="email" src={emailIcon}></img></a>
-				<p id="mailp">ewillroth@gmail.com</p>
+				<p className="contactText">ewillroth@gmail.com</p>
 			</ContactCard>
 			<ContactCard>
 				<a href="https://github.com/ewillroth"><img src={gitHubIcon} alt="github" /></a>
-				<p>github.com/ewillroth</p>
+				<p className="contactText" >github.com/ewillroth</p>
 			</ContactCard>
 			<ContactCard>
 				<a href="https://www.linkedin.com/in/ewillroth/"><img src={linkedInIcon} alt="linkedin" /></a>
-				<p>linkedin.com/in/ewillroth</p>
+				<p className="contactText" >linkedin.com/in/ewillroth</p>
 			</ContactCard>
    	 </Cont>
 	);
@@ -30,7 +30,6 @@ const Contact = () => {
 
 const Cont = styled.div`
 	background: #CCCECE;
-	height: 50vh;
 	width: 100%;
 	display: flex;
 	flex-direction: row;
@@ -40,16 +39,28 @@ const Cont = styled.div`
 `
 const ContactCard = styled.div`
 	display: flex;
+	margin: 20px 10px;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	color: #000;
+	.contactText {
+		display: none;
+	}
 	img{
 		width: 100px;
 		margin-bottom: 20px;
 	}
 	img:hover {
 		transform: scale(.97);
+	}
+	@media (max-width: 700px) {
+		img {
+			width: 70px;
+		}
+		.contactText {
+			display: flex;
+		}
 	}
 `
 
