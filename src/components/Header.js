@@ -81,6 +81,9 @@ const SmallNav = styled.div`
 	@media (max-width: 1050px) {
 		display: flex;
 	}
+	@media (max-width: 700px) {
+		display: none;
+	}
 
 `
 
@@ -91,6 +94,9 @@ const Burger = styled.div`
 	margin-right: 10px;
 	@media (max-width: 1050px) {
 		display: ${props => props.showMenu ? 'none' : 'flex'};
+	}
+	@media (max-width: 700px) {
+		display: none;
 	}
 	i {
 		font-size: 40px;

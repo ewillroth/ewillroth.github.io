@@ -53,6 +53,8 @@ const Styledp = styled.p`
 	@media (max-width: 645px){
 		margin-top: 20px;
 		text-align: center;
+		font-size: 14px;
+		width: 85%;
 	}
 `
 

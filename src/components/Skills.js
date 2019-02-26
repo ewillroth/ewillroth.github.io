@@ -135,6 +135,7 @@ const Icon = styled.div`
 	justify-content: center;
 	font-family: 'Nunito', sans-serif;
 	align-items: center;
+
 	img {
 		width: 150px;
 		height: 150px;
@@ -143,6 +144,17 @@ const Icon = styled.div`
 		width: 120px;
 		height: 120px;
 		margin: 15px;
+	}
+	@media (max-width: 700px) {
+		img {
+				width: 120px;
+				height: 120px;
+		}
+		.smallimg {
+				width: 90px;
+				height: 90px;
+				margin: 30px;
+			}
 	}
 `
 

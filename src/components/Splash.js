@@ -32,6 +32,9 @@ const StyledSplash = styled.div`
 	position: relative;
 	top: -80px;
 	color: #CCCECE;
+	@media (max-width: 700px) {
+		height: 500px;
+	}
 	i {
 		margin-top: 20px;
 		font-size: 50px;
