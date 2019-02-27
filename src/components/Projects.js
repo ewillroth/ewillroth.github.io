@@ -31,7 +31,7 @@ const Projects = () => {
 							<img src={settleLanding} alt="project landing page" />
 						</a>
 						<ul>
-							<li>Awarded most technical in my cohort</li>
+							<li>Won "most technical project" in my cohort at DevMountain</li>
 							<li>Learned & implemented socket.io to enable realtime updates for suggestions and participants</li>
 							<li>Used Firebase storage to enable users to upload images</li>
 							<li>Live site: settleit.app | Code: github.com/ewillroth/settle</li>
