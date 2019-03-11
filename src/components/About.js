@@ -4,13 +4,23 @@ import profile from '../assets/images/linkedinpic.jpeg';
 
 const About = () => {
 	return (
-			<Abt id="about">
+		<Abt id="about">
 			<h1>About Me</h1>
 			<div className="abtcontent">
-				<img src={profile} alt='' width="100px" height="100px"/>
-				<Styledp>I am currently looking for a job as a web developer in the Dallas area. Prior to studying web development, I worked in a few different industries—including the self-driving car and construction industries—that utilize software in unique ways. I experienced firsthand the impact of software development in the real world and became interested in pursuing a career in web development because of this experience. I graduate from DevMountain's Web Development Immersive course on March 1st and look forward to the continuing to learn and grow as a developer.</Styledp>
+				<img src={profile} alt="" width="100px" height="100px" />
+				<Styledp>
+					I am currently looking for a job as a web developer in the Dallas
+					area. Prior to studying web development, I worked in a few different
+					industries—including the self-driving car and construction
+					industries—that utilize software in unique ways. I experienced
+					firsthand the impact of software development in the real world and
+					became interested in pursuing a career in web development because of
+					this experience. I recently graduated from DevMountain's Web
+					Development Immersive course and look forward to the continuing to
+					learn and grow as a developer.
+				</Styledp>
 			</div>
-			</Abt>
+		</Abt>
 	);
 }
 
