@@ -74,7 +74,7 @@ const SmallNav = styled.div`
 	position: sticky;
 	top: 0vh;
 	height: 80px;
-	color: #CCCECE;
+	color:  #FFFFFF;
 	font-family: 'Merriweather', serif;
 	font-weight: 400;
 	z-index: 1000;
@@ -89,7 +89,7 @@ const SmallNav = styled.div`
 
 const Burger = styled.div`
 	display: none;
-	color: #CCCECE;
+	color:  #FFFFFF;
 	cursor: pointer
 	margin-right: 10px;
 	@media (max-width: 1050px) {
@@ -119,7 +119,7 @@ const Nav = styled.div`
 	position: sticky;
 	top: 0vh;
 	height: 80px;
-	color: #CCCECE;
+	color:  #FFFFFF;
 	font-family: 'Merriweather', serif;
 	font-weight: 400;
 	z-index: 1000;
@@ -155,7 +155,7 @@ const shake = keyframes`
 `
 
 const Button = styled.button`
-	color: #CCCECE;
+	color:  #FFFFFF;
 	:hover {
 		-webkit-animation: ${shake} 0.4s infinite;
 		animation: ${shake} 0.4s linear;

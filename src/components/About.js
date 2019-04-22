@@ -32,14 +32,13 @@ const Abt = styled.div`
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	font-family: 'Nunito', sans-serif;
+	font-family: 'Merriweather', serif;
 	position: relative;
 	top: -80px;
-	color: #CCCECE;
+	color:  #FFFFFF;
 	h1 {
 		font-size: 30px;
-		margin-bottom: 80px;
-		border-bottom: 1px solid #CCCECE;
+		margin-bottom: 40px;
 	}
 	img {
 		width: 200px;
@@ -57,11 +56,13 @@ const Abt = styled.div`
 `
 
 const Styledp = styled.p`
-	color: #CCCECE;
+	color:  #FFFFFF;
 	width: 50%;
 	line-height: 1.75;
-	font-family: 'Open Sans', sans-serif;
 	font-size: 16px;
+	background-color: #24272B;
+	padding: 30px;
+	font-family: Arial, Helvetica, sans-serif;
 	@media (max-width: 645px){
 		margin-top: 20px;
 		text-align: center;

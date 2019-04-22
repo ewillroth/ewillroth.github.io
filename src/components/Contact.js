@@ -24,13 +24,14 @@ const Contact = () => {
 				<a href="https://www.linkedin.com/in/ewillroth/"><img src={linkedInIcon} alt="linkedin" /></a>
 				<p className="contactText" >linkedin.com/in/ewillroth</p>
 			</ContactCard>
-   	 </Cont>
+		</Cont>
 	);
 }
 
 const Cont = styled.div`
-	background: #CCCECE;
+	background:  #FFFFFF;
 	width: 100%;
+	padding-top: 25px;
 	display: flex;
 	flex-direction: row;
 	justify-content: space-evenly;

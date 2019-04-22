@@ -110,13 +110,12 @@ const Skill = styled.div`
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	font-family: 'Nunito', sans-serif;
+	font-family: 'Merriweather', serif;
 	align-items: center;
-	color: #CCCECE;
+	color:  #FFFFFF;
 		h1 {
 			font-size: 30px;
-			margin-bottom: 80px;
-			border-bottom: 1px solid #CCCECE;
+			margin-bottom: 40px;
 		}
 `
 
@@ -137,7 +136,7 @@ const Icon = styled.div`
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	font-family: 'Nunito', sans-serif;
+			font-family: 'Merriweather', serif;
 	align-items: center;
 	img {
 		width: 150px;

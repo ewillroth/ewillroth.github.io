@@ -31,7 +31,7 @@ const StyledSplash = styled.div`
 	height: 700px;
 	position: relative;
 	top: -80px;
-	color: #CCCECE;
+	color:  #FFFFFF;
 	@media (max-width: 700px) {
 		height: 510px;
 	}
@@ -47,7 +47,7 @@ const StyledSplash = styled.div`
 const Title = styled.h1`
 	font-size: 40px;
 	font-weight: 500;
-		font-family: 'Merriweather', serif;
+	font-family: 'Merriweather', serif;
 `
 
 const SubTitle = styled.h1`
