@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import profile from '../assets/images/linkedinpic.jpeg';
+import resume from '../assets/ewillroth_resume.pdf';
 
 const About = () => {
 	return (
@@ -17,7 +18,7 @@ const About = () => {
 					became interested in pursuing a career in web development because of
 					this experience. I recently graduated from DevMountain's Web
 					Development Immersive course and look forward to the continuing to
-					learn and grow as a developer.
+					learn and grow as a developer. <a href={resume} download>Download my resume!</a>
 				</Styledp>
 			</div>
 		</Abt>
@@ -56,19 +57,22 @@ const Abt = styled.div`
 `
 
 const Styledp = styled.p`
-	color:  #FFFFFF;
+	color: #ffffff;
 	width: 50%;
 	line-height: 1.75;
 	font-size: 16px;
-	background-color: #24272B;
+	border: 3px solid #24272b;
 	padding: 30px;
 	font-family: Arial, Helvetica, sans-serif;
-	@media (max-width: 645px){
+	a {
+		color: #4fc2e2;
+	}
+	@media (max-width: 645px) {
 		margin-top: 20px;
 		text-align: center;
 		font-size: 14px;
 		width: 85%;
 	}
-`
+`;
 
 export default About;
