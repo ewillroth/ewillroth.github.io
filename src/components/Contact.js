@@ -59,9 +59,6 @@ const ContactCard = styled.div`
 		img {
 			width: 70px;
 		}
-		.contactText {
-			display: flex;
-		}
 	}
 `
 

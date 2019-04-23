@@ -72,6 +72,7 @@ const Styledp = styled.p`
 		text-align: center;
 		font-size: 14px;
 		width: 85%;
+		border: none;
 	}
 `;
 
