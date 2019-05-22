@@ -26,7 +26,7 @@ const Projects = () => {
 				<p className="projName">Ordeer</p>
 				<p className="tagline">An online ordering platform for restaurants</p>
 				<div>
-					<a href='http://www.ordeer.net'>
+					<a href='http://github.com/restaurant-ordering/ordeer'>
 						<img src={ordeerLanding} alt="project landing page" />
 					</a>
 					<ul>
