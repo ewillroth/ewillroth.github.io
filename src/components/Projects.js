@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import ordeerLanding from '../assets/images/ordeerLanding.png'
 import settleLanding from '../assets/images/settleLanding.png'
+import RunCalendarImg from '../assets/images/runCalendar.png'
 
 const Projects = () => {
 	return (
@@ -35,6 +36,20 @@ const Projects = () => {
 						<li>Learned & implemented Material-UI to create display cards for each menu item</li>
 						<li>I focused on front-end code including the registration page, order page and Jest testing</li>
 						<li>Code: github.com/restaurant-ordering/ordeer</li>
+					</ul>
+				</div>
+			</Project>
+			<Project>
+				<p className="projName">RunCalendar</p>
+				<p className="tagline">Add marathon training plan events to your google calendar</p>
+				<div>
+					<a href="https://runcalendar.app">
+						<img src={RunCalendarImg} alt="project screenshot" />
+					</a>
+					<ul>
+						<li>Built with vanilla HTML, CSS, and Javascript</li>
+						<li>Uses google calendar API to create events and add them to users' google calendar</li>
+						<li>Code: github.com/ewillroth/runcalendar</li>
 					</ul>
 				</div>
 			</Project>

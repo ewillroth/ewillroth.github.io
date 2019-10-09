@@ -10,15 +10,9 @@ const About = () => {
 			<div className="abtcontent">
 				<img src={profile} alt="" width="100px" height="100px" />
 				<Styledp>
-					I am currently looking for a job as a web developer in the Dallas
-					area. Prior to studying web development, I worked in a few different
-					industries—including the self-driving car and construction
-					industries—that utilize software in unique ways. I experienced
-					firsthand the impact of software development in the real world and
-					became interested in pursuing a career in web development because of
-					this experience. I recently graduated from DevMountain's Web
-					Development Immersive course and look forward to the continuing to
-					learn and grow as a developer. <a href={resume} download>Download my resume!</a>
+					I am a web developer based in Dallas, TX. I graduated from Texas A&M University with a bachelor of science in economics in 2012. I worked in a few different industries--including the self-driving car and construction industries--before deciding to make a career transition in 2018. After a few months of self-study, I enrolled DevMountain's web development immersive course which focused on React. I enjoy coding because it allows me to craft solutions to a variety of problems.
+
+					In my free time I enjoy being outdoors, playing sports, biking, watching tv and movies, and playing board games and video games. <a href={resume} download>Download my resume!</a>
 				</Styledp>
 			</div>
 		</Abt>
