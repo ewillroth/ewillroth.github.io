@@ -10,7 +10,7 @@ const About = () => {
 			<div className="abtcontent">
 				<img src={profile} alt="" width="100px" height="100px" />
 				<Styledp>
-					I am a web developer based in Dallas, TX. I graduated from Texas A&M University with a bachelor of science in economics in 2012. I worked in a few different industries--including the self-driving car and construction industries--before deciding to make a career transition in 2018. After a few months of self-study, I enrolled DevMountain's web development immersive course which focused on React. I enjoy coding because it allows me to craft solutions to a variety of problems.
+					I am a javascript developer based in Dallas, TX. I graduated from Texas A&M University with a bachelor of science in economics in 2012. I worked in a few different industries--including the self-driving car and construction industries--before deciding to make a career transition in 2018. After a few months of self-study, I enrolled DevMountain's web development immersive course which focused on React. I enjoy coding because it allows me to craft solutions to a variety of problems.
 
 					In my free time I enjoy being outdoors, playing sports, biking, watching tv and movies, and playing board games and video games. <a href={resume} download>Download my resume!</a>
 				</Styledp>
