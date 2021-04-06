@@ -13,7 +13,7 @@
 	},
 	"scripts": {
 		"predeploy": "npm run build",
-		"deploy": "cp -r ./build ./docs",
+		"deploy": "cp -r ./build/ ./docs",
 		"start": "react-scripts start",
 		"build": "react-scripts build",
 		"test": "react-scripts test",
