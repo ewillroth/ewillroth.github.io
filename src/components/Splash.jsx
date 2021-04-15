@@ -1,23 +1,30 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-const Splash = props => {
+const Splash = (props) => {
 	return (
 		<StyledSplash>
 			<Title>Eric Willroth</Title>
-			<SubTitle>Web Developer</SubTitle>
-			<i className="material-icons" onClick={() => document.getElementById('about').scrollIntoView({
-				behavior: 'smooth', block: 'start'
-			})}>expand_more</i>
+			<SubTitle>Developer</SubTitle>
+			<i
+				className='material-icons'
+				onClick={() =>
+					document.getElementById('about').scrollIntoView({
+						behavior: 'smooth',
+						block: 'start',
+					})
+				}>
+				expand_more
+			</i>
 		</StyledSplash>
 	);
-}
+};
 const grow = keyframes`
 
 100% {
 	transform: scale(1.5)
 }
-`
+`;
 
 const StyledSplash = styled.div`
 	background-image: url(https://images.unsplash.com/photo-1540675990483-e5441d694ff8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1049&q=80);
@@ -31,7 +38,7 @@ const StyledSplash = styled.div`
 	height: 700px;
 	position: relative;
 	top: -80px;
-	color:  #FFFFFF;
+	color: #ffffff;
 	@media (max-width: 700px) {
 		height: 510px;
 	}
@@ -43,19 +50,18 @@ const StyledSplash = styled.div`
 		animation: ${grow} 0.2s linear forwards;
 		cursor: pointer;
 	}
-`
+`;
 const Title = styled.h1`
 	font-size: 40px;
 	font-weight: 500;
-	font-family: 'Merriweather', serif;
-`
+	font-family: 'Open Sans', sans-serif;
+`;
 
 const SubTitle = styled.h1`
 	font-size: 24px;
 	font-weight 300;
 	margin-top: 20px;
-	font-family: 'Merriweather', serif;
-`
-
+	font-family: 'Open Sans', sans-serif;
+`;
 
 export default Splash;

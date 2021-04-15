@@ -88,7 +88,7 @@ const SmallNav = styled.div`
 	top: 0vh;
 	height: 80px;
 	color: #ffffff;
-	font-family: 'Merriweather', serif;
+	font-family: 'Open Sans', sans-serif;
 	font-weight: 400;
 	z-index: 1000;
 	@media (max-width: 1050px) {
@@ -132,7 +132,7 @@ const Nav = styled.div`
 	top: 0vh;
 	height: 80px;
 	color: #ffffff;
-	font-family: 'Merriweather', serif;
+	font-family: 'Open Sans', sans-serif;
 	font-weight: 400;
 	z-index: 1000;
 	@media (max-width: 1050px) {
@@ -146,7 +146,7 @@ const Links = styled.div`
 	text-decoration: none;
 	width: 400px;
 	font-size: 22px;
-	font-family: 'Merriweather', serif;
+	font-family: 'Open Sans', sans-serif;
 `;
 const shake = keyframes`
 25% {

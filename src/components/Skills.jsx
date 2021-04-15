@@ -22,82 +22,82 @@ const Skills = () => {
 			<h1>Skills</h1>
 			<IconContainer>
 				<Icon>
-					<p>React</p>
 					<a href='https://reactjs.org'>
 						<img src={ReactIcon} alt='React' />
 					</a>
+					<p>React</p>
 				</Icon>
 				<Icon>
-					<p>Redux</p>
 					<a href='https://redux.js.org'>
 						<img src={ReduxIcon} alt='Redux' />
 					</a>
+					<p>Redux</p>
 				</Icon>
 				<Icon>
-					<p>ES6+</p>
 					<a href='https://es6.io'>
 						<img src={JavaScriptIcon} alt='ES6+' />
 					</a>
+					<p>ES6+</p>
 				</Icon>
 				<Icon>
-					<p>Express</p>
 					<a href='https://expressjs.com'>
 						<img src={ExpressIcon} alt='Express' />
 					</a>
+					<p>Express</p>
 				</Icon>
 				<Icon>
-					<p>NPM</p>
 					<a href='https://www.npmjs.com'>
 						<img src={NPMIcon} alt='NPM' />
 					</a>
+					<p>NPM</p>
 				</Icon>
 				<Icon>
-					<p>Sass</p>
 					<a href='https://sass-lang.com/'>
-						<img className='smallimg' src={SassIcon} alt='Sass' />
+						<img src={SassIcon} alt='Sass' />
 					</a>
+					<p>Sass</p>
 				</Icon>
 				<Icon>
-					<p>Git + GitHub</p>
 					<a href='https://git-scm.com'>
 						<img src={GitIcon} alt='Git + GitHub' />
 					</a>
+					<p>Git + GitHub</p>
 				</Icon>
 				<Icon>
-					<p>Socket.io</p>
 					<a href='https://socket.io'>
 						<img src={SocketIcon} alt='Socket.io' />
 					</a>
+					<p>Socket.io</p>
 				</Icon>
 				<Icon>
-					<p>PostgreSQL</p>
 					<a href='https://www.postgresql.org'>
 						<img src={PostgeSQLIcon} alt='PostgreSQL' />
 					</a>
+					<p>PostgreSQL</p>
 				</Icon>
 				<Icon>
-					<p>Node.js</p>
 					<a href='https://nodejs.org/en'>
 						<img src={NodeIcon} alt='Node.js' />
 					</a>
+					<p>Node.js</p>
 				</Icon>
 				<Icon>
-					<p>CSS3</p>
 					<a href='https://developer.mozilla.org/en-US/docs/Web/CSS/CSS3'>
 						<img src={CSSIcon} alt='CSS3' />
 					</a>
+					<p>CSS3</p>
 				</Icon>
 				<Icon>
-					<p>HTML5</p>
 					<a href='https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5'>
 						<img src={HTMLIcon} alt='HTML5' />
 					</a>
+					<p>HTML5</p>
 				</Icon>
 				<Icon>
-					<p>Material-UI</p>
 					<a href='https://material-ui.com/'>
-						<img className='smallimg' src={MaterialIcon} alt='Material-UI' />
+						<img src={MaterialIcon} alt='Material-UI' />
 					</a>
+					<p>Material-UI</p>
 				</Icon>
 			</IconContainer>
 		</Skill>
@@ -105,16 +105,18 @@ const Skills = () => {
 };
 
 const Skill = styled.div`
-	background: #010009;
+	background: #fff;
 	width: 100%;
 	position: relative;
 	top: -80px;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	font-family: 'Merriweather', serif;
+	font-family: 'Open Sans', sans-serif;
 	align-items: center;
-	color: #ffffff;
+	color: #000;
+	padding: 80px 0;
+
 	h1 {
 		font-size: 30px;
 		margin-bottom: 40px;
@@ -138,11 +140,11 @@ const Icon = styled.div`
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-			font-family: 'Merriweather', serif;
+			font-family: 'Open Sans', sans-serif;
 	align-items: center;
 	img {
-		width: 150px;
-		height: 150px;
+		width: 120px;
+		height: 120px;
 	}
 	.smallimg {
 		width: 120px;
