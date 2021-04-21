@@ -50,6 +50,7 @@ const Projects = () => {
 						<li>Built with vanilla HTML, CSS, and Javascript</li>
 						<li>Uses google calendar API to create events and add them to users' google calendar</li>
 						<li>Code: github.com/ewillroth/runcalendar</li>
+						<li>Live site: https://runcalendar.app</li>
 					</ul>
 				</div>
 			</Project>
