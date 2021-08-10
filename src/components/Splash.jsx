@@ -27,8 +27,7 @@ const grow = keyframes`
 `;
 
 const StyledSplash = styled.div`
-	background-image: url(https://images.unsplash.com/photo-1540675990483-e5441d694ff8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1049&q=80);
-	background-position: center;
+	background-image: url(https://ewillroth.s3.us-east-2.amazonaws.com/wedding/trees.jpeg);
 	background-size: cover;
 	width: 100%;
 	display: flex;
