@@ -1,27 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 
 const Header = (props) => {
-  const [scroll, setScroll] = useState(window.scrollY);
   const [showMenu, setShowMenu] = useState(false);
-
-  const trackScroll = () => {
-    //tracks scroll position to update navbar colors
-    document.addEventListener("scroll", () => {
-      console.log(window.scrollY);
-      if (window.scrollY >= 400) {
-        setScroll(400);
-      } else {
-        setScroll(0);
-      }
-    });
-    //function useEffect will use to remove event listener on unMount
-    return function stopTracking() {
-      document.removeEventListener("scroll", () => {
-        console.log(window.scrollY);
-      });
-    };
-  };
 
   const clickToScroll = (e) => {
     document.getElementById(e.target.name).scrollIntoView({
@@ -34,11 +15,9 @@ const Header = (props) => {
     setShowMenu(!showMenu);
   };
 
-  useEffect(trackScroll, []);
-
   return (
     <>
-      <Nav scroll={scroll}>
+      <Nav>
         <Links>
           <Button name="about" onClick={clickToScroll}>
             About
@@ -54,7 +33,7 @@ const Header = (props) => {
           </Button>
         </Links>
       </Nav>
-      <SmallNav scroll={scroll}>
+      <SmallNav>
         <SmallNavLinks showMenu={showMenu}>
           <Button name="about" onClick={clickToScroll}>
             About
