@@ -1,0 +1,35 @@
+{
+  "files": {
+    "main.css": "/static/css/main.3fa8fb2f.css",
+    "main.js": "/static/js/main.76ec7b5a.js",
+    "static/media/headshot.jpeg": "/static/media/headshot.e7d205e7de0819c06db8.jpeg",
+    "static/media/settleLanding.png": "/static/media/settleLanding.f4b966b4cd858dbadade.png",
+    "static/media/ordeerLanding.png": "/static/media/ordeerLanding.ea4441ae1c097fe98a4e.png",
+    "static/media/runCalendar.png": "/static/media/runCalendar.b1b86c643a09aac50bf8.png",
+    "static/media/ewillroth_resume.pdf": "/static/media/ewillroth_resume.eef1c23e7335eea091a2.pdf",
+    "static/media/DevIcons-09.svg": "/static/media/DevIcons-09.0a8d52630e055dc7ec8f1d9217e6536a.svg",
+    "static/media/DevIcons-08.svg": "/static/media/DevIcons-08.d31e1db5ed19ccaa804391f85b3a9f2f.svg",
+    "static/media/DevIcons-10.svg": "/static/media/DevIcons-10.9914789198378f064769993ddf492d38.svg",
+    "static/media/DevIcons-02.svg": "/static/media/DevIcons-02.90bf928b2fe21efc499f323d3b17607f.svg",
+    "static/media/DevIcons-01.svg": "/static/media/DevIcons-01.fe33e8944e2308f3b15b712b3355ae94.svg",
+    "static/media/DevIcons-04.svg": "/static/media/DevIcons-04.22be5cd1268ae1ad2d9b8d31d20e6753.svg",
+    "static/media/DevIcons-14.svg": "/static/media/DevIcons-14.e385284b9ff26c49aae8a6bcdc5c59d5.svg",
+    "static/media/DevIcons-03.svg": "/static/media/DevIcons-03.651b927d34f4714abac6e9e51aa58969.svg",
+    "static/media/DevIcons-15.svg": "/static/media/DevIcons-15.8e4b7b054da931eb6d22c05349076e87.svg",
+    "static/media/DevIcons-13.svg": "/static/media/DevIcons-13.d7a44b2f0193b5b4ba94be98f4ac8848.svg",
+    "static/media/DevIcons-07.svg": "/static/media/DevIcons-07.8e526a5ab1c8b419a71e523b44c78992.svg",
+    "static/media/ContactIcons-02.svg": "/static/media/ContactIcons-02.9d6b2ac287103dd3b596b0876174a9aa.svg",
+    "static/media/DevIcons-06.svg": "/static/media/DevIcons-06.925fb2dac3d09d0ef901d629de46ff62.svg",
+    "static/media/ContactIcons-03.svg": "/static/media/ContactIcons-03.fad4b9444d2facce3001e629e93331f9.svg",
+    "static/media/ContactIcons-01.svg": "/static/media/ContactIcons-01.5bdfa9c698dc551a83664429231404e5.svg",
+    "index.html": "/index.html",
+    "static/media/ContactIcons-04.svg": "/static/media/ContactIcons-04.339e00294fdc5b314a7bc67c5ad7deea.svg",
+    "static/media/DevIcons-11.svg": "/static/media/DevIcons-11.c0958f97929482097efdccc254e938aa.svg",
+    "main.3fa8fb2f.css.map": "/static/css/main.3fa8fb2f.css.map",
+    "main.76ec7b5a.js.map": "/static/js/main.76ec7b5a.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3fa8fb2f.css",
+    "static/js/main.76ec7b5a.js"
+  ]
+}
