@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.3fa8fb2f.css",
-    "main.js": "/static/js/main.e0a95a72.js",
+    "main.js": "/static/js/main.f1b049a9.js",
     "static/media/headshot.jpeg": "/static/media/headshot.e7d205e7de0819c06db8.jpeg",
     "static/media/settleLanding.png": "/static/media/settleLanding.f4b966b4cd858dbadade.png",
     "static/media/ordeerLanding.png": "/static/media/ordeerLanding.ea4441ae1c097fe98a4e.png",
@@ -26,10 +26,10 @@
     "static/media/ContactIcons-04.svg": "/static/media/ContactIcons-04.339e00294fdc5b314a7bc67c5ad7deea.svg",
     "static/media/DevIcons-11.svg": "/static/media/DevIcons-11.c0958f97929482097efdccc254e938aa.svg",
     "main.3fa8fb2f.css.map": "/static/css/main.3fa8fb2f.css.map",
-    "main.e0a95a72.js.map": "/static/js/main.e0a95a72.js.map"
+    "main.f1b049a9.js.map": "/static/js/main.f1b049a9.js.map"
   },
   "entrypoints": [
     "static/css/main.3fa8fb2f.css",
-    "static/js/main.e0a95a72.js"
+    "static/js/main.f1b049a9.js"
   ]
 }
