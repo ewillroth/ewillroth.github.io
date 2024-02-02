@@ -1,61 +1,75 @@
-import React from 'react';
-import styled from 'styled-components';
-import ordeerLanding from '../assets/images/ordeerLanding.png';
-import settleLanding from '../assets/images/settleLanding.png';
-import RunCalendarImg from '../assets/images/runCalendar.png';
+import React from "react";
+import styled from "styled-components";
+import ordeerLanding from "../assets/images/ordeerLanding.png";
+import settleLanding from "../assets/images/settleLanding.png";
+import RunCalendarImg from "../assets/images/runCalendar.png";
 
 const Projects = () => {
-	return (
-		<Proj id='projects'>
-			<h1>Personal Projects</h1>
-			<Project>
-				<p className='projName'>Settle</p>
-				<p className='tagline'>A tool to help groups make decisions</p>
-				<div>
-					<a href='https://github.com/ewillroth/Settle'>
-						<img src={settleLanding} alt='project landing page' />
-					</a>
-					<ul>
-						<li>Won "most technical project" in my cohort at DevMountain</li>
-						<li>Learned & implemented socket.io to enable realtime updates for suggestions and participants</li>
-						<li>Used Firebase storage to enable users to upload images</li>
-						<li>Code: github.com/ewillroth/settle</li>
-					</ul>
-				</div>
-			</Project>
-			<Project>
-				<p className='projName'>Ordeer</p>
-				<p className='tagline'>An online ordering platform for restaurants</p>
-				<div>
-					<a href='http://github.com/restaurant-ordering/ordeer'>
-						<img src={ordeerLanding} alt='project landing page' />
-					</a>
-					<ul>
-						<li>Group project built in 3 weeks with two other students</li>
-						<li>Contains only functional components to utilize React Hooks</li>
-						<li>Learned & implemented Material-UI to create display cards for each menu item</li>
-						<li>I focused on front-end code including the registration page, order page and Jest testing</li>
-						<li>Code: github.com/restaurant-ordering/ordeer</li>
-					</ul>
-				</div>
-			</Project>
-			<Project>
-				<p className='projName'>RunCalendar</p>
-				<p className='tagline'>Add marathon training plan events to your google calendar</p>
-				<div>
-					<a href='https://runcalendar.app'>
-						<img src={RunCalendarImg} alt='project screenshot' />
-					</a>
-					<ul>
-						<li>Built with vanilla HTML, CSS, and Javascript</li>
-						<li>Uses google calendar API to create events and add them to users' google calendar</li>
-						<li>Code: github.com/ewillroth/runcalendar</li>
-						<li>Live site: https://runcalendar.app</li>
-					</ul>
-				</div>
-			</Project>
-		</Proj>
-	);
+  return (
+    <Proj id="projects">
+      <h1>Personal Projects</h1>
+      <Project>
+        <p className="projName">Settle</p>
+        <p className="tagline">A tool to help groups make decisions</p>
+        <div>
+          <a href="https://github.com/ewillroth/Settle">
+            <img src={settleLanding} alt="project landing page" />
+          </a>
+          <ul>
+            <li>Won "most technical project" in my cohort at DevMountain</li>
+            <li>
+              Learned & implemented socket.io to enable realtime updates for
+              suggestions and participants
+            </li>
+            <li>Used Firebase storage to enable users to upload images</li>
+            <li>Code: github.com/ewillroth/settle</li>
+          </ul>
+        </div>
+      </Project>
+      <Project>
+        <p className="projName">Ordeer</p>
+        <p className="tagline">An online ordering platform for restaurants</p>
+        <div>
+          <a href="http://github.com/restaurant-ordering/ordeer">
+            <img src={ordeerLanding} alt="project landing page" />
+          </a>
+          <ul>
+            <li>Group project built in 3 weeks with two other students</li>
+            <li>Contains only functional components to utilize React Hooks</li>
+            <li>
+              Learned & implemented Material-UI to create display cards for each
+              menu item
+            </li>
+            <li>
+              I focused on front-end code including the registration page, order
+              page and Jest testing
+            </li>
+            <li>Code: github.com/restaurant-ordering/ordeer</li>
+          </ul>
+        </div>
+      </Project>
+      <Project>
+        <p className="projName">RunCalendar</p>
+        <p className="tagline">
+          Add marathon training plan events to your google calendar
+        </p>
+        <div>
+          <a href="https://runcalendar.app">
+            <img src={RunCalendarImg} alt="project screenshot" />
+          </a>
+          <ul>
+            <li>Built with vanilla HTML, CSS, and Javascript</li>
+            <li>
+              Uses google calendar API to create events and add them to users'
+              google calendar
+            </li>
+            <li>Code: github.com/ewillroth/runcalendar</li>
+            <li>Live site: https://runcalendar.app</li>
+          </ul>
+        </div>
+      </Project>
+    </Proj>
+  );
 };
 
 const Proj = styled.div`

@@ -22,7 +22,7 @@ section,
 summary,
 video,
 wbr {
-	display: block;
+  display: block;
 }
 
 bdi,
@@ -35,7 +35,7 @@ rp,
 rt,
 ruby,
 time {
-	display: inline;
+  display: inline;
 }
 
 /* Deprecated tags */
@@ -53,7 +53,7 @@ strike,
 tt,
 u,
 xmp {
-	display: none;
+  display: none;
 }
 
 /* Reset styles for all structural tags */
@@ -149,47 +149,47 @@ tr,
 ul,
 var,
 video {
-	background: transparent;
-	border: 0;
-	font-size: 100%;
-	margin: 0;
-	outline: none;
-	padding: 0;
-	text-align: left;
-	text-decoration: none;
-	vertical-align: baseline;
-	z-index: 1;
+  background: transparent;
+  border: 0;
+  font-size: 100%;
+  margin: 0;
+  outline: none;
+  padding: 0;
+  text-align: left;
+  text-decoration: none;
+  vertical-align: baseline;
+  z-index: 1;
 }
 
 /* Miscellaneous resets */
 body {
-	line-height: 1;
+  line-height: 1;
 }
 
 ol,
 ul {
-	list-style: none;
+  list-style: none;
 }
 
 blockquote,
 q {
-	quotes: none;
+  quotes: none;
 }
 
 blockquote:before,
 blockquote:after,
 q:before,
 q:after {
-	content: '';
-	content: none;
+  content: "";
+  content: none;
 }
 
 table {
-	border-collapse: collapse;
-	border-spacing: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 body {
-	overscroll-behavior-y: none;
-	overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
