@@ -12,7 +12,7 @@ const Projects = () => {
         <p className="projName">Settle</p>
         <p className="tagline">A tool to help groups make decisions</p>
         <div>
-          <a href="https://github.com/ewillroth/Settle">
+          <a href="https://github.com/ewillroth/SettleDevMtn">
             <img src={settleLanding} alt="project landing page" />
           </a>
           <ul>
