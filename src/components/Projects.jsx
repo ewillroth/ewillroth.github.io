@@ -22,7 +22,7 @@ const Projects = () => {
               suggestions and participants
             </li>
             <li>Used Firebase storage to enable users to upload images</li>
-            <li>Code: github.com/ewillroth/settle</li>
+            <li>Code: github.com/ewillroth/SettleDevMtn</li>
           </ul>
         </div>
       </Project>
