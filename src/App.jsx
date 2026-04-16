@@ -1,19 +1,11 @@
 import React from "react";
-import Header from "./components/Header";
-import About from "./components/About";
-import Skills from "./components/Skills";
-import Projects from "./components/Projects";
-import Contact from "./components/Contact";
+import BearIcon from "./assets/images/bear.avif";
 import "./reset.css";
 
 const App = () => {
   return (
     <div className="App">
-      <Header />
-      <About />
-      <Skills />
-      <Projects />
-      <Contact />
+      <img src={BearIcon} alt="bear" />
     </div>
   );
 };
