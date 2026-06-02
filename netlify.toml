@@ -1,0 +1,4 @@
+[[redirects]]
+  from = "/if/*"
+  to = "/fasting-timer.html"
+  status = 200
