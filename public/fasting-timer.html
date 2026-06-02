@@ -1,1219 +1,1715 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fasting Timer</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap');
-
-  :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --surface2: #161616;
-    --border: #1e1e1e;
-    --border2: #2a2a2a;
-    --accent: #c8f565;
-    --accent-dim: #8aad3a;
-    --warn: #f5a623;
-    --text: #e8e8e8;
-    --muted: #555;
-    --fasting: #c8f565;
-    --eating: #65c8f5;
-    --done: #f565a0;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    overflow-x: hidden;
-  }
-
-  .grain {
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 560px;
-  }
-
-  /* PAGE SWITCHING */
-  .page { display: none; }
-  .page.active { display: block; }
-
-  /* HEADER */
-  .header {
-    text-align: center;
-    margin-bottom: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .header-center { flex: 1; text-align: center; }
-
-  .header h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 0.4em;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-
-  .status-label {
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 4px 12px;
-    border-radius: 2px;
-    display: inline-block;
-    margin-top: 6px;
-  }
-
-  .status-fasting { background: #1a2200; color: var(--fasting); border: 1px solid #2d3d00; }
-  .status-eating  { background: #001a22; color: var(--eating);  border: 1px solid #003d52; }
-
-  /* NAV BUTTON */
-  .nav-btn {
-    background: transparent;
-    border: 1px solid var(--border2);
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 6px 12px;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* TIMER BLOCK */
-  .timer-block {
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 40px 32px;
-    text-align: center;
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-    background: var(--surface);
-  }
-
-  .phase-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.35em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .countdown {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(64px, 14vw, 96px);
-    letter-spacing: 0.05em;
-    line-height: 1;
-    transition: color 0.3s;
-  }
-  .countdown.fasting { color: var(--fasting); }
-  .countdown.eating  { color: var(--eating);  }
-
-  .countdown-sub {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-top: 8px;
-  }
-
-  .progress-wrap {
-    background: #1a1a1a;
-    border-radius: 2px;
-    height: 4px;
-    margin-top: 24px;
-    overflow: hidden;
-  }
-
-  .progress-bar {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 1s linear;
-  }
-  .progress-bar.fasting { background: var(--fasting); }
-  .progress-bar.eating  { background: var(--eating); }
-
-  /* META STATE */
-  .meta-state {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .meta-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-  }
-
-  .meta-text { font-size: 12px; color: var(--text); }
-  .meta-text strong { color: var(--accent); }
-
-  /* SCHEDULE TABLE */
-  .schedule {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-
-  .schedule-header {
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .schedule-row {
-    display: grid;
-    grid-template-columns: 90px 1fr 80px;
-    padding: 10px 20px;
-    font-size: 12px;
-    border-bottom: 1px solid #161616;
-    align-items: center;
-    transition: background 0.2s;
-  }
-  .schedule-row:last-child { border-bottom: none; }
-
-  .schedule-row.today-fasting {
-    background: #151f00;
-    border-left: 2px solid var(--fasting);
-  }
-  .schedule-row.today-eating {
-    background: #00151f;
-    border-left: 2px solid var(--eating);
-  }
-
-  .day-name { color: var(--muted); font-weight: 500; }
-  .schedule-row.today-fasting .day-name,
-  .schedule-row.today-eating .day-name { color: var(--text); }
-
-  .window-text { color: #888; font-size: 11px; }
-  .schedule-row.today-fasting .window-text,
-  .schedule-row.today-eating .window-text { color: var(--text); }
-
-  .badge {
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 3px 7px;
-    border-radius: 2px;
-    text-align: center;
-  }
-  .badge-fast { background: #1a2200; color: var(--fasting); }
-  .badge-eat  { background: #001a22; color: var(--eating); }
-  .badge-free { background: #1a1a1a; color: var(--muted); }
-
-  .current-time {
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 12px;
-    letter-spacing: 0.1em;
-  }
-
-  /* ===== CONFIG PAGE ===== */
-  .config-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 0.4em;
-    color: var(--muted);
-    text-transform: uppercase;
-    text-align: center;
-    margin-bottom: 24px;
-  }
-
-  .config-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-
-  .config-row {
-    display: grid;
-    grid-template-columns: 90px 1fr;
-    border-bottom: 1px solid #161616;
-    align-items: stretch;
-  }
-  .config-row:last-child { border-bottom: none; }
-
-  .config-day-label {
-    padding: 14px 16px;
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    border-right: 1px solid #161616;
-    display: flex;
-    align-items: center;
-  }
-
-  .config-fields {
-    padding: 10px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .config-type-row {
-    display: flex;
-    gap: 6px;
-  }
-
-  .type-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 2px;
-    border: 1px solid var(--border2);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .type-btn.active-fast { border-color: var(--fasting); color: var(--fasting); background: #1a2200; }
-  .type-btn.active-eat  { border-color: var(--eating);  color: var(--eating);  background: #001a22; }
-  .type-btn.active-free { border-color: var(--border2); color: var(--text);    background: #1e1e1e; }
-
-  .time-inputs {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .time-label {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    min-width: 30px;
-  }
-
-  .time-input {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text);
-    padding: 5px 8px;
-    border-radius: 2px;
-    width: 90px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .time-input:focus { border-color: var(--accent); }
-
-  .config-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 4px;
-  }
-
-  .btn-save {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 10px 24px;
-    border-radius: 2px;
-    border: none;
-    background: var(--fasting);
-    color: #0a0a0a;
-    cursor: pointer;
-    font-weight: 500;
-    transition: opacity 0.2s;
-    flex: 1;
-  }
-  .btn-save:hover { opacity: 0.85; }
-
-  .btn-reset {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 10px 16px;
-    border-radius: 2px;
-    border: 1px solid var(--border2);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-reset:hover { border-color: var(--done); color: var(--done); }
-
-  .save-confirm {
-    text-align: center;
-    font-size: 11px;
-    color: var(--fasting);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-top: 8px;
-    height: 16px;
-    transition: opacity 0.3s;
-  }
-
-  /* ===== FAQ PAGE ===== */
-  .faq-section {
-    margin-bottom: 16px;
-  }
-
-  .faq-section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 0 0 10px 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 2px;
-  }
-
-  .faq-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-
-  .faq-item {
-    border-bottom: 1px solid #161616;
-    overflow: hidden;
-  }
-  .faq-item:last-child { border-bottom: none; }
-
-  .faq-q {
-    padding: 14px 18px;
-    font-size: 12px;
-    color: var(--text);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    transition: background 0.15s;
-    user-select: none;
-  }
-  .faq-q:hover { background: #161616; }
-
-  .faq-arrow {
-    color: var(--muted);
-    font-size: 10px;
-    flex-shrink: 0;
-    transition: transform 0.2s;
-  }
-  .faq-item.open .faq-arrow { transform: rotate(180deg); color: var(--accent); }
-  .faq-item.open .faq-q { color: var(--accent); }
-
-  .faq-a {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-  }
-  .faq-item.open .faq-a { max-height: 600px; }
-
-  .faq-a-inner {
-    padding: 0 18px 16px 18px;
-    font-size: 12px;
-    color: #999;
-    line-height: 1.7;
-  }
-
-  .faq-a-inner p { margin-bottom: 10px; }
-  .faq-a-inner p:last-child { margin-bottom: 0; }
-
-  .metabolic-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin: 10px 0;
-  }
-
-  .meta-row {
-    display: grid;
-    grid-template-columns: 80px 1fr;
-    gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid #1a1a1a;
-    align-items: start;
-  }
-  .meta-row:last-child { border-bottom: none; }
-
-  .meta-hrs {
-    font-size: 10px;
-    color: var(--fasting);
-    letter-spacing: 0.05em;
-    padding-top: 1px;
-    font-weight: 500;
-  }
-  .meta-desc { font-size: 11px; color: #999; line-height: 1.5; }
-  .meta-desc strong { color: var(--text); display: block; margin-bottom: 2px; }
-
-  .tip-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .tip-row {
-    display: grid;
-    grid-template-columns: 20px 1fr;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid #1a1a1a;
-    font-size: 11px;
-    color: #999;
-    line-height: 1.5;
-    align-items: start;
-  }
-  .tip-row:last-child { border-bottom: none; }
-  .tip-bullet { color: var(--fasting); font-size: 14px; line-height: 1.3; }
-  .tip-row strong { color: var(--text); }
-
-  .install-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    counter-reset: steps;
-  }
-
-  .install-step {
-    display: grid;
-    grid-template-columns: 24px 1fr;
-    gap: 10px;
-    padding: 9px 0;
-    border-bottom: 1px solid #1a1a1a;
-    font-size: 11px;
-    color: #999;
-    line-height: 1.5;
-    align-items: start;
-  }
-  .install-step:last-child { border-bottom: none; }
-
-  .step-num {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: #1a2200;
-    border: 1px solid #2d3d00;
-    color: var(--fasting);
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .install-step strong { color: var(--text); display: block; }
-
-  code {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    border-radius: 2px;
-    padding: 1px 5px;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--eating);
-    word-break: break-all;
-  }
-
-  .faq-page-scroll {
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-    padding-right: 2px;
-  }
-  .faq-page-scroll::-webkit-scrollbar { width: 3px; }
-  .faq-page-scroll::-webkit-scrollbar-track { background: transparent; }
-  .faq-page-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-  /* ===== TOGGLE SWITCH ===== */
-  .toggle-wrap { position: relative; display: inline-block; cursor: pointer; }
-  .toggle-wrap input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .toggle-track {
-    display: block; width: 36px; height: 20px;
-    background: var(--border2); border-radius: 10px;
-    transition: background 0.2s;
-  }
-  .toggle-wrap input:checked + .toggle-track { background: var(--fasting); }
-  .toggle-thumb {
-    position: absolute; top: 3px; left: 3px;
-    width: 14px; height: 14px; border-radius: 50%;
-    background: #fff; transition: transform 0.2s;
-  }
-  .toggle-wrap input:checked ~ .toggle-track .toggle-thumb { transform: translateX(16px); }
-
-  /* ===== THEME PICKER POPUP ===== */
-  .theme-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 100;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .theme-overlay.open { display: flex; }
-
-  .theme-popup {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 6px;
-    padding: 24px;
-    width: 320px;
-    max-width: calc(100vw - 48px);
-    position: relative;
-    animation: popIn 0.18s ease;
-  }
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(0.93); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
-  .theme-popup-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.4em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-
-  .theme-close {
-    position: absolute;
-    top: 14px; right: 14px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 16px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 2px 6px;
-    border-radius: 2px;
-    transition: color 0.15s;
-  }
-  .theme-close:hover { color: var(--text); }
-
-  .theme-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .theme-swatch {
-    border: 1px solid var(--border2);
-    border-radius: 4px;
-    padding: 12px 14px;
-    cursor: pointer;
-    transition: all 0.15s;
-    background: transparent;
-    text-align: left;
-    font-family: 'DM Mono', monospace;
-  }
-  .theme-swatch:hover { border-color: var(--border2); background: #1a1a1a; }
-  .theme-swatch.selected { border-color: currentColor; }
-
-  .swatch-preview {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 8px;
-  }
-
-  .swatch-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-  }
-
-  .swatch-name {
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    display: block;
-  }
-
-  .swatch-desc {
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-    display: block;
-    margin-top: 2px;
-  }
-</style>
-</head>
-<body>
-<div class="grain"></div>
-
-<!-- ===== THEME PICKER POPUP ===== -->
-<div class="theme-overlay" id="themeOverlay" onclick="closeThemeIfBg(event)">
-  <div class="theme-popup">
-    <div class="theme-popup-title">Choose a Theme</div>
-    <button class="theme-close" onclick="closeTheme()">✕</button>
-    <div class="theme-grid" id="themeGrid">
-      <!-- injected by JS -->
-    </div>
-  </div>
-</div>
-<div class="container">
-
-  <!-- ===== TIMER PAGE ===== -->
-  <div class="page active" id="page-timer">
-    <div class="header">
-      <div style="width:80px"></div>
-      <div class="header-center">
-        <div class="header h1" style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.4em;color:var(--muted);text-transform:uppercase;">Intermittent Fasting</div>
-        <div id="statusLabel" class="status-label status-fasting">Fasting</div>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button class="nav-btn" onclick="showPage('faq')">? FAQ</button>
-        <button class="nav-btn" onclick="openTheme()">◐ Theme</button>
-        <button class="nav-btn" onclick="showPage('config')">⚙ Config</button>
-      </div>
-    </div>
-
-    <div class="timer-block" id="timerBlock">
-      <div class="phase-title" id="phaseTitle">Time Remaining in Fast</div>
-      <div class="countdown fasting" id="countdown">00:00:00</div>
-      <div class="countdown-sub" id="countdownSub">calculating...</div>
-      <div class="progress-wrap">
-        <div class="progress-bar fasting" id="progressBar" style="width:0%"></div>
-      </div>
-    </div>
-
-    <div class="meta-state">
-      <div class="meta-dot" id="metaDot" style="background:var(--fasting)"></div>
-      <div class="meta-text" id="metaText">Loading...</div>
-    </div>
-
-    <div class="schedule" id="scheduleTable">
-      <div class="schedule-header">Weekly Schedule</div>
-      <!-- rows injected by JS -->
-    </div>
-
-    <div class="current-time">Last updated: <span id="currentTime">--</span></div>
-  </div>
-
-  <!-- ===== FAQ PAGE ===== -->
-  <div class="page" id="page-faq">
-    <div class="header">
-      <button class="nav-btn" onclick="showPage('timer')">← Back</button>
-      <div class="header-center">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.4em;color:var(--muted);text-transform:uppercase;">Guide & FAQ</div>
-      </div>
-      <div style="width:80px"></div>
-    </div>
-
-    <div class="faq-page-scroll">
-
-      <!-- HOW FASTING WORKS -->
-      <div class="faq-card">
-        <div class="faq-item open" onclick="toggleFaq(this)">
-          <div class="faq-q">How fasting works — metabolic states <span class="faq-arrow">▼</span></div>
-          <div class="faq-a"><div class="faq-a-inner">
-            <p>When you fast, your body progresses through distinct metabolic phases. The longer you go, the deeper the benefit.</p>
-            <div class="metabolic-timeline">
-              <div class="meta-row">
-                <div class="meta-hrs">0 – 4 hrs</div>
-                <div class="meta-desc"><strong>Fed State</strong>Digesting your last meal. Insulin is elevated, fat burning is paused.</div>
-              </div>
-              <div class="meta-row">
-                <div class="meta-hrs">4 – 12 hrs</div>
-                <div class="meta-desc"><strong>Early Fast</strong>Blood glucose normalizes. Body starts tapping glycogen stores for energy.</div>
-              </div>
-              <div class="meta-row">
-                <div class="meta-hrs">12 – 18 hrs</div>
-                <div class="meta-desc"><strong>Fat Burning</strong>Glycogen depletes. Fat burning (lipolysis) ramps up significantly.</div>
-              </div>
-              <div class="meta-row">
-                <div class="meta-hrs">18 – 24 hrs</div>
-                <div class="meta-desc"><strong>Ketosis + Autophagy</strong>Deep ketosis begins. Autophagy peaks — your cells start breaking down and recycling damaged proteins and dead cells.</div>
-              </div>
-              <div class="meta-row">
-                <div class="meta-hrs">24 – 72 hrs</div>
-                <div class="meta-desc"><strong>Deep Repair</strong>Growth hormone spikes significantly, preserving muscle. Deep cellular repair continues throughout.</div>
-              </div>
-            </div>
-          </div></div>
-        </div>
-      </div>
-
-      <!-- MOTIVATION TIPS -->
-      <div class="faq-card">
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">Tips for getting through a fast <span class="faq-arrow">▼</span></div>
-          <div class="faq-a"><div class="faq-a-inner">
-            <div class="tip-list">
-              <div class="tip-row"><div class="tip-bullet">→</div><div><strong>Black coffee is your best friend.</strong> It suppresses appetite, boosts fat oxidation, and gives you a mental lift without breaking the fast.</div></div>
-              <div class="tip-row"><div class="tip-bullet">→</div><div><strong>Sparkling water during hunger waves.</strong> Topo Chico, Pellegrino — the carbonation creates a feeling of fullness. Keep it cold.</div></div>
-              <div class="tip-row"><div class="tip-bullet">→</div><div><strong>Electrolytes kill hunger.</strong> Sodium especially — a pinch of sea salt in water or a zero-calorie electrolyte packet works surprisingly well.</div></div>
-              <div class="tip-row"><div class="tip-bullet">→</div><div><strong>Hunger is wave-based.</strong> If you feel it, wait 20 minutes. It almost always passes on its own.</div></div>
-              <div class="tip-row"><div class="tip-bullet">→</div><div><strong>Reframe hunger.</strong> It's a signal that fat burning is happening — not a problem to solve. Let it pass.</div></div>
-              <div class="tip-row"><div class="tip-bullet">→</div><div><strong>Stay busy.</strong> Hunger is loudest when you're idle. Schedule demanding work or exercise during your fasted hours.</div></div>
-              <div class="tip-row"><div class="tip-bullet">→</div><div><strong>Zero Monster / zero-cal drinks.</strong> No calories, no meaningful insulin response. Fine to use during a fast, though black coffee is cleaner long-term.</div></div>
-            </div>
-          </div></div>
-        </div>
-      </div>
-
-      <!-- BREAKING YOUR FAST -->
-      <div class="faq-card">
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">What breaks a fast? <span class="faq-arrow">▼</span></div>
-          <div class="faq-a"><div class="faq-a-inner">
-            <div class="tip-list">
-              <div class="tip-row"><div class="tip-bullet">✓</div><div><strong>These do NOT break your fast:</strong> Water, black coffee, plain tea, sparkling water, electrolytes (no sugar), creatine, most zero-calorie drinks.</div></div>
-              <div class="tip-row"><div class="tip-bullet">✗</div><div><strong>These WILL break your fast:</strong> Any calories, milk or cream in coffee, sweetened drinks, protein shakes, BCAAs, gum with sugar, most supplements with fillers.</div></div>
-              <div class="tip-row"><div class="tip-bullet">~</div><div><strong>Gray area:</strong> Artificial sweeteners (sucralose etc.) don't have calories but may trigger a minor insulin response in some people. Functionally fine for most.</div></div>
-            </div>
-          </div></div>
-        </div>
-      </div>
-
-      <!-- CREATINE -->
-      <div class="faq-card">
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">Creatine while fasting <span class="faq-arrow">▼</span></div>
-          <div class="faq-a"><div class="faq-a-inner">
-            <p>Creatine has no calories and doesn't trigger an insulin response — it won't break your fast.</p>
-            <p>Absorption is slightly more efficient when insulin is elevated (i.e. after eating), so the optimal time is right when you break your fast, with your meal. For standard daily dosing the difference is negligible — consistency matters more than timing.</p>
-            <p>Keep your dose the same (3–5g/day). No adjustment needed for fasting. Just stay well hydrated — creatine and fasting both put mild demand on hydration.</p>
-          </div></div>
-        </div>
-      </div>
-
-      <!-- SAVE LOCALLY -->
-      <div class="faq-card">
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">How to save this app to your desktop <span class="faq-arrow">▼</span></div>
-          <div class="faq-a"><div class="faq-a-inner">
-            <p>This is a self-contained HTML file — no install needed. Save it once and it works forever offline.</p>
-            <div class="install-steps">
-              <div class="install-step">
-                <div class="step-num">1</div>
-                <div><strong>Download the file</strong>Right-click the download link from Claude and save as <code>fasting-timer.html</code> somewhere permanent (e.g. your Desktop or Documents folder).</div>
-              </div>
-              <div class="install-step">
-                <div class="step-num">2</div>
-                <div><strong>Open in Chrome or Brave</strong>Double-click the file. It opens in your default browser. If it doesn't open in Chrome, right-click → Open with → Chrome.</div>
-              </div>
-              <div class="install-step">
-                <div class="step-num">3</div>
-                <div><strong>Create a desktop shortcut (opens as standalone app)</strong>Right-click your desktop → New → Shortcut. In the location field paste:<br><br><code>"C:\Program Files\Google\Chrome\Application\chrome.exe" --app=file:///C:/Users/YOUR_NAME/Desktop/fasting-timer.html</code><br><br>Replace <code>YOUR_NAME</code> with your Windows username. Name it <em>Fasting Timer</em> and click Finish.</div>
-              </div>
-              <div class="install-step">
-                <div class="step-num">4</div>
-                <div><strong>Using Brave instead?</strong>Same steps, just change the path to:<br><br><code>"C:\Program Files\Brave Software\Brave-Browser\Application\brave.exe" --app=file:///C:/Users/YOUR_NAME/Desktop/fasting-timer.html</code></div>
-              </div>
-              <div class="install-step">
-                <div class="step-num">5</div>
-                <div><strong>Pin to taskbar</strong>After opening via the shortcut, right-click the taskbar icon → Pin to taskbar. One click to open from now on.</div>
-              </div>
-            </div>
-            <p style="margin-top:12px;">Your schedule settings are saved in the browser's local storage — they persist between sessions as long as you open the file in the same browser.</p>
-          </div></div>
-        </div>
-      </div>
-
-    </div><!-- end scroll -->
-  </div>
-
-  <!-- ===== CONFIG PAGE ===== -->
-  <div class="page" id="page-config">
-    <div class="header">
-      <button class="nav-btn" onclick="saveAndReturn()">← Save</button>
-      <div class="header-center">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.4em;color:var(--muted);text-transform:uppercase;">Configure Schedule</div>
-      </div>
-      <div style="width:80px"></div>
-    </div>
-
-    <div class="config-card" id="configRows">
-      <!-- injected by JS -->
-    </div>
-
-    <div class="config-card" style="margin-bottom:16px">
-      <div class="config-row" style="grid-template-columns:1fr auto;align-items:center;padding:12px 16px">
-        <div style="font-size:12px;color:var(--text)">Week starts on Sunday</div>
-        <label class="toggle-wrap">
-          <input type="checkbox" id="weekStartMonday" onchange="saveWeekStart(this.checked)">
-          <span class="toggle-track"><span class="toggle-thumb"></span></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="config-actions">
-      <button class="btn-reset" onclick="resetToDefaults()">Reset to Default</button>
-      <button class="btn-save" onclick="saveAndReturn()">Save Schedule</button>
-    </div>
-    <div class="save-confirm" id="saveConfirm"></div>
-  </div>
-
-</div>
-
-<script>
-const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
-function loadWeekStartMonday() {
-  try {
-    const val = localStorage.getItem('fasting-week-monday');
-    return val === null ? true : val === 'true';
-  } catch(e) { return true; }
-}
-function saveWeekStart(val) {
-  // val=true means Sunday first, so weekStartMonday = false
-  try { localStorage.setItem('fasting-week-monday', !val); } catch(e) {}
-  renderConfigRows();
-  renderScheduleTable();
-}
-function getDisplayOrder() {
-  return loadWeekStartMonday()
-    ? [1,2,3,4,5,6,0]  // Mon first
-    : [0,1,2,3,4,5,6]; // Sun first
-}
-
-// Default schedule (Eric's plan)
-const DEFAULT_SCHEDULE = [
-  { type: 'free', eatStart: null, eatEnd: null },
-  { type: 'free', eatStart: null, eatEnd: null },
-  { type: 'free', eatStart: null, eatEnd: null },
-  { type: 'free', eatStart: null, eatEnd: null },
-  { type: 'free', eatStart: null, eatEnd: null },
-  { type: 'free', eatStart: null, eatEnd: null },
-  { type: 'free', eatStart: null, eatEnd: null },
-];
-
-function loadSchedule() {
-  try {
-    const saved = localStorage.getItem('fasting-schedule');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Migrate legacy 'fast' type to 'eat'
-      parsed.forEach(d => { if (d.type === 'fast') d.type = 'eat'; });
-      return parsed;
-    }
-  } catch(e) {}
-  return JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-}
-
-function saveSchedule(s) {
-  localStorage.setItem('fasting-schedule', JSON.stringify(s));
-}
-
-let schedule = loadSchedule();
-
-// ── helpers ──────────────────────────────────────────────────────────────────
-function toMins(timeStr) {
-  if (!timeStr) return null;
-  const [h, m] = timeStr.split(':').map(Number);
-  return h * 60 + m;
-}
-
-function fmtTime(timeStr) {
-  if (!timeStr) return '—';
-  const [h, m] = timeStr.split(':').map(Number);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const hr = h % 12 || 12;
-  return `${hr}:${String(m).padStart(2,'0')} ${ampm}`;
-}
-
-function formatSecs(totalSeconds) {
-  if (totalSeconds <= 0) return '00:00:00';
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = Math.floor(totalSeconds % 60);
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-
-// ── metabolic state ───────────────────────────────────────────────────────────
-function getMetabolicState(hrs) {
-  if (hrs < 4)  return { state: 'Fed State',      desc: 'Digesting your last meal. Insulin elevated.' };
-  if (hrs < 12) return { state: 'Early Fast',     desc: 'Blood glucose normalizing. Glycogen being used.' };
-  if (hrs < 16) return { state: 'Fat Burning',    desc: 'Glycogen depleting. Lipolysis ramping up.' };
-  if (hrs < 18) return { state: 'Deep Fat Burn',  desc: 'Significant fat oxidation underway.' };
-  if (hrs < 20) return { state: 'Ketosis Onset',  desc: 'Ketone production beginning. Growth hormone rising.' };
-  if (hrs < 22) return { state: 'Ketosis',        desc: 'Deep fat burning. Autophagy activating.' };
-  return               { state: 'Peak Autophagy', desc: 'Cellular repair and cleanup in full effect. 🔥' };
-}
-
-// ── core timer logic ──────────────────────────────────────────────────────────
-function getCurrentState() {
-  const now = new Date();
-  const dow = now.getDay();
-  const nowMins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
-  const day = schedule[dow];
-
-  // Free day
-  if (day.type === 'free') {
-    return { phase: 'eating', label: 'Free Day', sub: 'eat normally today', progress: 1, hoursIntoFast: 0 };
-  }
-
-  // Eating-type day (has a window, possibly with null start or end meaning "open")
-  const eatStartMins = toMins(day.eatStart);
-  const eatEndMins   = toMins(day.eatEnd);
-
-  // Are we inside the eating window right now?
-  const afterStart = eatStartMins === null || nowMins >= eatStartMins;
-  const beforeEnd  = eatEndMins   === null || nowMins < eatEndMins;
-
-  if (afterStart && beforeEnd) {
-    // Inside eating window
-    if (eatEndMins === null) {
-      // Open-ended — count up from open time
-      const elapsed = eatStartMins !== null ? (nowMins - eatStartMins) * 60 : nowMins * 60;
-      return { phase: 'eating', label: 'Eating Window Open', sub: 'open — eat well', progress: 1, hoursIntoFast: 0, remaining: null };
-    }
-    const total = (eatStartMins !== null ? eatEndMins - eatStartMins : eatEndMins) * 60;
-    const elapsed = (nowMins - (eatStartMins || 0)) * 60;
-    const remaining = (eatEndMins - nowMins) * 60;
-    return { phase: 'eating', label: 'Eating Window Open', sub: 'window closes in', remaining, total, progress: elapsed / total, hoursIntoFast: 0 };
-  }
-
-  // We're fasting — find how long until next eating window opens
-  // Walk forward through days (max 7) to find next eatStart
-  let minsUntilEat = null;
-  let fastStartedMinsAgo = null;
-
-  // When did the fast start? — end of today's eating window or end of yesterday's
-  let fastStartedAt = null; // in "absolute" minutes from some reference
-
-  // Find previous eating window end to compute elapsed fast time
-  for (let back = 1; back <= 7; back++) {
-    const prevDow = (dow - back + 7) % 7;
-    const prevDay = schedule[prevDow];
-    if (prevDay.type === 'free') { fastStartedMinsAgo = back * 24 * 60 - nowMins; break; } // approximate
-    const prevEnd = toMins(prevDay.eatEnd);
-    if (prevEnd !== null) {
-      fastStartedMinsAgo = (back - 1) * 24 * 60 + (nowMins < prevEnd && back === 1 ? 0 : (24*60 - prevEnd) + nowMins);
-      // simpler: minutes since that day's eatEnd
-      if (back === 1) {
-        fastStartedMinsAgo = nowMins - prevEnd; // negative means before it — shouldn't happen here
-        if (fastStartedMinsAgo < 0) fastStartedMinsAgo += 24 * 60;
-      } else {
-        fastStartedMinsAgo = (24 * 60 - prevEnd) + ((back - 2) * 24 * 60) + nowMins;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Fasting Timer" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <title>Fasting Timer</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap");
+
+      :root {
+        --bg: #0a0a0a;
+        --surface: #111111;
+        --surface2: #161616;
+        --border: #1e1e1e;
+        --border2: #2a2a2a;
+        --accent: #c8f565;
+        --accent-dim: #8aad3a;
+        --warn: #f5a623;
+        --text: #e8e8e8;
+        --muted: #555;
+        --fasting: #c8f565;
+        --eating: #65c8f5;
+        --done: #f565a0;
       }
-      break;
-    }
-    const prevStart = toMins(prevDay.eatStart);
-    if (prevStart !== null) {
-      // That day had a start-only window (open end), fast "started" at midnight conceptually
-      fastStartedMinsAgo = (back - 1) * 24 * 60 + nowMins;
-      break;
-    }
-  }
 
-  // Find next eating window start
-  for (let fwd = 0; fwd <= 7; fwd++) {
-    const fwdDow = (dow + fwd) % 7;
-    const fwdDay = schedule[fwdDow];
-    if (fwd === 0) {
-      // Today — could be before eatStart
-      if (fwdDay.type !== 'free' && eatStartMins !== null && nowMins < eatStartMins) {
-        minsUntilEat = eatStartMins - nowMins;
-        break;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      continue;
-    }
-    if (fwdDay.type === 'free') { minsUntilEat = fwd * 24 * 60 - nowMins; break; }
-    const nextStart = toMins(fwdDay.eatStart);
-    if (nextStart !== null) {
-      minsUntilEat = (fwd * 24 * 60 - nowMins) + nextStart;
-      break;
-    } else {
-      // Null start = free from midnight
-      minsUntilEat = fwd * 24 * 60 - nowMins;
-      break;
-    }
-  }
 
-  if (minsUntilEat === null) minsUntilEat = 24 * 60;
-  if (fastStartedMinsAgo === null) fastStartedMinsAgo = 0;
-  if (fastStartedMinsAgo < 0) fastStartedMinsAgo = 0;
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Mono", monospace;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        overflow-x: hidden;
+      }
 
-  const totalFastMins = fastStartedMinsAgo + minsUntilEat;
-  const progress = totalFastMins > 0 ? fastStartedMinsAgo / totalFastMins : 0;
+      .grain {
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+      }
 
-  return {
-    phase: 'fasting',
-    label: 'Fasting',
-    sub: 'until next eating window',
-    remaining: minsUntilEat * 60,
-    total: totalFastMins * 60,
-    progress: Math.min(Math.max(progress, 0), 1),
-    hoursIntoFast: fastStartedMinsAgo / 60,
-  };
-}
+      .container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 560px;
+      }
 
-// ── schedule table rendering ──────────────────────────────────────────────────
-function renderScheduleTable() {
-  const dow = new Date().getDay();
-  const state = getCurrentState();
-  const table = document.getElementById('scheduleTable');
-  let html = '<div class="schedule-header">Weekly Schedule</div>';
+      /* PAGE SWITCHING */
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
 
-  for (const i of getDisplayOrder()) {
-    const day = schedule[i];
-    const isToday = i === dow;
-    let rowClass = '';
-    if (isToday) rowClass = state.phase === 'eating' ? 'today-eating' : 'today-fasting';
+      /* HEADER */
+      .header {
+        text-align: center;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-    let windowText = '';
-    let badgeClass = 'badge-free';
-    let badgeText = 'Free';
+      .header-center {
+        flex: 1;
+        text-align: center;
+      }
 
-    if (day.type === 'free') {
-      windowText = 'Normal eating';
-      badgeClass = 'badge-free';
-      badgeText = 'Open';
-    } else {
-      const s = day.eatStart ? fmtTime(day.eatStart) : 'Open';
-      const e = day.eatEnd   ? fmtTime(day.eatEnd)   : 'Open';
-      if (!day.eatStart && day.eatEnd) windowText = `Until ${e}`;
-      else if (day.eatStart && !day.eatEnd) windowText = `From ${s}`;
-      else if (!day.eatStart && !day.eatEnd) windowText = 'All day';
-      else windowText = `${s} – ${e}`;
+      .header h1 {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.4em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
 
-      // Badge: calculate actual fasting ratio from window length
-      const startMins = toMins(day.eatStart);
-      const endMins   = toMins(day.eatEnd);
-      const bothSet   = startMins !== null && endMins !== null;
+      .status-label {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 2px;
+        display: inline-block;
+        margin-top: 6px;
+      }
 
-      if (!bothSet) {
-        // Open-ended window — can't calculate ratio
-        badgeClass = 'badge-free'; badgeText = 'Open';
-      } else {
-        const eatHrs   = Math.round((endMins - startMins) / 60);
-        const fastHrs  = 24 - eatHrs;
-        if (eatHrs <= 2) {
-          badgeClass = 'badge-fast'; badgeText = 'OMAD';
-        } else {
-          badgeClass = eatHrs <= 6 ? 'badge-fast' : 'badge-eat';
-          badgeText  = `${fastHrs}:${eatHrs}`;
+      .status-fasting {
+        background: #1a2200;
+        color: var(--fasting);
+        border: 1px solid #2d3d00;
+      }
+      .status-eating {
+        background: #001a22;
+        color: var(--eating);
+        border: 1px solid #003d52;
+      }
+
+      /* NAV BUTTON */
+      .nav-btn {
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--muted);
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 6px 12px;
+        border-radius: 2px;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .nav-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* TIMER BLOCK */
+      .timer-block {
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 40px 32px;
+        text-align: center;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+        background: var(--surface);
+      }
+
+      .phase-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.35em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+
+      .countdown {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(64px, 14vw, 96px);
+        letter-spacing: 0.05em;
+        line-height: 1;
+        transition: color 0.3s;
+      }
+      .countdown.fasting {
+        color: var(--fasting);
+      }
+      .countdown.eating {
+        color: var(--eating);
+      }
+
+      .countdown-sub {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-top: 8px;
+      }
+
+      .progress-wrap {
+        background: #1a1a1a;
+        border-radius: 2px;
+        height: 4px;
+        margin-top: 24px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 1s linear;
+      }
+      .progress-bar.fasting {
+        background: var(--fasting);
+      }
+      .progress-bar.eating {
+        background: var(--eating);
+      }
+
+      /* META STATE */
+      .meta-state {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .meta-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.8);
         }
       }
-    }
 
-    html += `<div class="schedule-row ${rowClass}">
+      .meta-text {
+        font-size: 12px;
+        color: var(--text);
+      }
+      .meta-text strong {
+        color: var(--accent);
+      }
+
+      /* SCHEDULE TABLE */
+      .schedule {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+
+      .schedule-header {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .schedule-row {
+        display: grid;
+        grid-template-columns: 90px 1fr 80px;
+        padding: 10px 20px;
+        font-size: 12px;
+        border-bottom: 1px solid #161616;
+        align-items: center;
+        transition: background 0.2s;
+      }
+      .schedule-row:last-child {
+        border-bottom: none;
+      }
+
+      .schedule-row.today-fasting {
+        background: #151f00;
+        border-left: 2px solid var(--fasting);
+      }
+      .schedule-row.today-eating {
+        background: #00151f;
+        border-left: 2px solid var(--eating);
+      }
+
+      .day-name {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .schedule-row.today-fasting .day-name,
+      .schedule-row.today-eating .day-name {
+        color: var(--text);
+      }
+
+      .window-text {
+        color: #888;
+        font-size: 11px;
+      }
+      .schedule-row.today-fasting .window-text,
+      .schedule-row.today-eating .window-text {
+        color: var(--text);
+      }
+
+      .badge {
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 3px 7px;
+        border-radius: 2px;
+        text-align: center;
+      }
+      .badge-fast {
+        background: #1a2200;
+        color: var(--fasting);
+      }
+      .badge-eat {
+        background: #001a22;
+        color: var(--eating);
+      }
+      .badge-free {
+        background: #1a1a1a;
+        color: var(--muted);
+      }
+
+      .current-time {
+        text-align: center;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 12px;
+        letter-spacing: 0.1em;
+      }
+
+      /* ===== CONFIG PAGE ===== */
+      .config-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.4em;
+        color: var(--muted);
+        text-transform: uppercase;
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .config-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+
+      .config-row {
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        border-bottom: 1px solid #161616;
+        align-items: stretch;
+      }
+      .config-row:last-child {
+        border-bottom: none;
+      }
+
+      .config-day-label {
+        padding: 14px 16px;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        border-right: 1px solid #161616;
+        display: flex;
+        align-items: center;
+      }
+
+      .config-fields {
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .config-type-row {
+        display: flex;
+        gap: 6px;
+      }
+
+      .type-btn {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 2px;
+        border: 1px solid var(--border2);
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .type-btn.active-fast {
+        border-color: var(--fasting);
+        color: var(--fasting);
+        background: #1a2200;
+      }
+      .type-btn.active-eat {
+        border-color: var(--eating);
+        color: var(--eating);
+        background: #001a22;
+      }
+      .type-btn.active-free {
+        border-color: var(--border2);
+        color: var(--text);
+        background: #1e1e1e;
+      }
+
+      .time-inputs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .time-label {
+        font-size: 10px;
+        color: var(--muted);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        min-width: 30px;
+      }
+
+      .time-input {
+        font-family: "DM Mono", monospace;
+        font-size: 12px;
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        color: var(--text);
+        padding: 5px 8px;
+        border-radius: 2px;
+        width: 90px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .time-input:focus {
+        border-color: var(--accent);
+      }
+
+      .config-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 4px;
+      }
+
+      .btn-save {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 10px 24px;
+        border-radius: 2px;
+        border: none;
+        background: var(--fasting);
+        color: #0a0a0a;
+        cursor: pointer;
+        font-weight: 500;
+        transition: opacity 0.2s;
+        flex: 1;
+      }
+      .btn-save:hover {
+        opacity: 0.85;
+      }
+
+      .btn-reset {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 10px 16px;
+        border-radius: 2px;
+        border: 1px solid var(--border2);
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-reset:hover {
+        border-color: var(--done);
+        color: var(--done);
+      }
+
+      .save-confirm {
+        text-align: center;
+        font-size: 11px;
+        color: var(--fasting);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-top: 8px;
+        height: 16px;
+        transition: opacity 0.3s;
+      }
+
+      /* ===== FAQ PAGE ===== */
+      .faq-section {
+        margin-bottom: 16px;
+      }
+
+      .faq-section-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 0 0 10px 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 2px;
+      }
+
+      .faq-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+
+      .faq-item {
+        border-bottom: 1px solid #161616;
+        overflow: hidden;
+      }
+      .faq-item:last-child {
+        border-bottom: none;
+      }
+
+      .faq-q {
+        padding: 14px 18px;
+        font-size: 12px;
+        color: var(--text);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        transition: background 0.15s;
+        user-select: none;
+      }
+      .faq-q:hover {
+        background: #161616;
+      }
+
+      .faq-arrow {
+        color: var(--muted);
+        font-size: 10px;
+        flex-shrink: 0;
+        transition: transform 0.2s;
+      }
+      .faq-item.open .faq-arrow {
+        transform: rotate(180deg);
+        color: var(--accent);
+      }
+      .faq-item.open .faq-q {
+        color: var(--accent);
+      }
+
+      .faq-a {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .faq-item.open .faq-a {
+        max-height: 600px;
+      }
+
+      .faq-a-inner {
+        padding: 0 18px 16px 18px;
+        font-size: 12px;
+        color: #999;
+        line-height: 1.7;
+      }
+
+      .faq-a-inner p {
+        margin-bottom: 10px;
+      }
+      .faq-a-inner p:last-child {
+        margin-bottom: 0;
+      }
+
+      .metabolic-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin: 10px 0;
+      }
+
+      .meta-row {
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #1a1a1a;
+        align-items: start;
+      }
+      .meta-row:last-child {
+        border-bottom: none;
+      }
+
+      .meta-hrs {
+        font-size: 10px;
+        color: var(--fasting);
+        letter-spacing: 0.05em;
+        padding-top: 1px;
+        font-weight: 500;
+      }
+      .meta-desc {
+        font-size: 11px;
+        color: #999;
+        line-height: 1.5;
+      }
+      .meta-desc strong {
+        color: var(--text);
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .tip-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .tip-row {
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #1a1a1a;
+        font-size: 11px;
+        color: #999;
+        line-height: 1.5;
+        align-items: start;
+      }
+      .tip-row:last-child {
+        border-bottom: none;
+      }
+      .tip-bullet {
+        color: var(--fasting);
+        font-size: 14px;
+        line-height: 1.3;
+      }
+      .tip-row strong {
+        color: var(--text);
+      }
+
+      .install-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        counter-reset: steps;
+      }
+
+      .install-step {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        gap: 10px;
+        padding: 9px 0;
+        border-bottom: 1px solid #1a1a1a;
+        font-size: 11px;
+        color: #999;
+        line-height: 1.5;
+        align-items: start;
+      }
+      .install-step:last-child {
+        border-bottom: none;
+      }
+
+      .step-num {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #1a2200;
+        border: 1px solid #2d3d00;
+        color: var(--fasting);
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      .install-step strong {
+        color: var(--text);
+        display: block;
+      }
+
+      code {
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 2px;
+        padding: 1px 5px;
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        color: var(--eating);
+        word-break: break-all;
+      }
+
+      .faq-page-scroll {
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        padding-right: 2px;
+      }
+      .faq-page-scroll::-webkit-scrollbar {
+        width: 3px;
+      }
+      .faq-page-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .faq-page-scroll::-webkit-scrollbar-thumb {
+        background: var(--border2);
+        border-radius: 2px;
+      }
+
+      /* ===== TOGGLE SWITCH ===== */
+      .toggle-wrap {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+      }
+      .toggle-wrap input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+      .toggle-track {
+        display: block;
+        width: 36px;
+        height: 20px;
+        background: var(--border2);
+        border-radius: 10px;
+        transition: background 0.2s;
+      }
+      .toggle-wrap input:checked + .toggle-track {
+        background: var(--fasting);
+      }
+      .toggle-thumb {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.2s;
+      }
+      .toggle-wrap input:checked ~ .toggle-track .toggle-thumb {
+        transform: translateX(16px);
+      }
+
+      /* ===== THEME PICKER POPUP ===== */
+      .theme-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+      }
+      .theme-overlay.open {
+        display: flex;
+      }
+
+      .theme-popup {
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 24px;
+        width: 320px;
+        max-width: calc(100vw - 48px);
+        position: relative;
+        animation: popIn 0.18s ease;
+      }
+      @keyframes popIn {
+        from {
+          opacity: 0;
+          transform: scale(0.93);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .theme-popup-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.4em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .theme-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-size: 16px;
+        cursor: pointer;
+        line-height: 1;
+        padding: 2px 6px;
+        border-radius: 2px;
+        transition: color 0.15s;
+      }
+      .theme-close:hover {
+        color: var(--text);
+      }
+
+      .theme-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .theme-swatch {
+        border: 1px solid var(--border2);
+        border-radius: 4px;
+        padding: 12px 14px;
+        cursor: pointer;
+        transition: all 0.15s;
+        background: transparent;
+        text-align: left;
+        font-family: "DM Mono", monospace;
+      }
+      .theme-swatch:hover {
+        border-color: var(--border2);
+        background: #1a1a1a;
+      }
+      .theme-swatch.selected {
+        border-color: currentColor;
+      }
+
+      .swatch-preview {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 8px;
+      }
+
+      .swatch-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .swatch-name {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        display: block;
+      }
+
+      .swatch-desc {
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 0.05em;
+        display: block;
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grain"></div>
+
+    <!-- ===== THEME PICKER POPUP ===== -->
+    <div
+      class="theme-overlay"
+      id="themeOverlay"
+      onclick="closeThemeIfBg(event)"
+    >
+      <div class="theme-popup">
+        <div class="theme-popup-title">Choose a Theme</div>
+        <button class="theme-close" onclick="closeTheme()">✕</button>
+        <div class="theme-grid" id="themeGrid">
+          <!-- injected by JS -->
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <!-- ===== TIMER PAGE ===== -->
+      <div class="page active" id="page-timer">
+        <div class="header">
+          <div style="width: 80px"></div>
+          <div class="header-center">
+            <div
+              class="header h1"
+              style="
+                font-family: &quot;Bebas Neue&quot;, sans-serif;
+                font-size: 13px;
+                letter-spacing: 0.4em;
+                color: var(--muted);
+                text-transform: uppercase;
+              "
+            >
+              Intermittent Fasting
+            </div>
+            <div id="statusLabel" class="status-label status-fasting">
+              Fasting
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px">
+            <button class="nav-btn" onclick="showPage('faq')">? FAQ</button>
+            <button class="nav-btn" onclick="openTheme()">◐ Theme</button>
+            <button class="nav-btn" onclick="showPage('config')">
+              ⚙ Config
+            </button>
+          </div>
+        </div>
+
+        <div class="timer-block" id="timerBlock">
+          <div class="phase-title" id="phaseTitle">Time Remaining in Fast</div>
+          <div class="countdown fasting" id="countdown">00:00:00</div>
+          <div class="countdown-sub" id="countdownSub">calculating...</div>
+          <div class="progress-wrap">
+            <div
+              class="progress-bar fasting"
+              id="progressBar"
+              style="width: 0%"
+            ></div>
+          </div>
+        </div>
+
+        <div class="meta-state">
+          <div
+            class="meta-dot"
+            id="metaDot"
+            style="background: var(--fasting)"
+          ></div>
+          <div class="meta-text" id="metaText">Loading...</div>
+        </div>
+
+        <div class="schedule" id="scheduleTable">
+          <div class="schedule-header">Weekly Schedule</div>
+          <!-- rows injected by JS -->
+        </div>
+
+        <div class="current-time">
+          Last updated: <span id="currentTime">--</span>
+        </div>
+      </div>
+
+      <!-- ===== FAQ PAGE ===== -->
+      <div class="page" id="page-faq">
+        <div class="header">
+          <button class="nav-btn" onclick="showPage('timer')">← Back</button>
+          <div class="header-center">
+            <div
+              style="
+                font-family: &quot;Bebas Neue&quot;, sans-serif;
+                font-size: 13px;
+                letter-spacing: 0.4em;
+                color: var(--muted);
+                text-transform: uppercase;
+              "
+            >
+              Guide & FAQ
+            </div>
+          </div>
+          <div style="width: 80px"></div>
+        </div>
+
+        <div class="faq-page-scroll">
+          <!-- HOW FASTING WORKS -->
+          <div class="faq-card">
+            <div class="faq-item open" onclick="toggleFaq(this)">
+              <div class="faq-q">
+                How fasting works — metabolic states
+                <span class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a">
+                <div class="faq-a-inner">
+                  <p>
+                    When you fast, your body progresses through distinct
+                    metabolic phases. The longer you go, the deeper the benefit.
+                  </p>
+                  <div class="metabolic-timeline">
+                    <div class="meta-row">
+                      <div class="meta-hrs">0 – 4 hrs</div>
+                      <div class="meta-desc">
+                        <strong>Fed State</strong>Digesting your last meal.
+                        Insulin is elevated, fat burning is paused.
+                      </div>
+                    </div>
+                    <div class="meta-row">
+                      <div class="meta-hrs">4 – 12 hrs</div>
+                      <div class="meta-desc">
+                        <strong>Early Fast</strong>Blood glucose normalizes.
+                        Body starts tapping glycogen stores for energy.
+                      </div>
+                    </div>
+                    <div class="meta-row">
+                      <div class="meta-hrs">12 – 18 hrs</div>
+                      <div class="meta-desc">
+                        <strong>Fat Burning</strong>Glycogen depletes. Fat
+                        burning (lipolysis) ramps up significantly.
+                      </div>
+                    </div>
+                    <div class="meta-row">
+                      <div class="meta-hrs">18 – 24 hrs</div>
+                      <div class="meta-desc">
+                        <strong>Ketosis + Autophagy</strong>Deep ketosis begins.
+                        Autophagy peaks — your cells start breaking down and
+                        recycling damaged proteins and dead cells.
+                      </div>
+                    </div>
+                    <div class="meta-row">
+                      <div class="meta-hrs">24 – 72 hrs</div>
+                      <div class="meta-desc">
+                        <strong>Deep Repair</strong>Growth hormone spikes
+                        significantly, preserving muscle. Deep cellular repair
+                        continues throughout.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MOTIVATION TIPS -->
+          <div class="faq-card">
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">
+                Tips for getting through a fast <span class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a">
+                <div class="faq-a-inner">
+                  <div class="tip-list">
+                    <div class="tip-row">
+                      <div class="tip-bullet">→</div>
+                      <div>
+                        <strong>Black coffee is your best friend.</strong> It
+                        suppresses appetite, boosts fat oxidation, and gives you
+                        a mental lift without breaking the fast.
+                      </div>
+                    </div>
+                    <div class="tip-row">
+                      <div class="tip-bullet">→</div>
+                      <div>
+                        <strong>Sparkling water during hunger waves.</strong>
+                        Topo Chico, Pellegrino — the carbonation creates a
+                        feeling of fullness. Keep it cold.
+                      </div>
+                    </div>
+                    <div class="tip-row">
+                      <div class="tip-bullet">→</div>
+                      <div>
+                        <strong>Electrolytes kill hunger.</strong> Sodium
+                        especially — a pinch of sea salt in water or a
+                        zero-calorie electrolyte packet works surprisingly well.
+                      </div>
+                    </div>
+                    <div class="tip-row">
+                      <div class="tip-bullet">→</div>
+                      <div>
+                        <strong>Hunger is wave-based.</strong> If you feel it,
+                        wait 20 minutes. It almost always passes on its own.
+                      </div>
+                    </div>
+                    <div class="tip-row">
+                      <div class="tip-bullet">→</div>
+                      <div>
+                        <strong>Reframe hunger.</strong> It's a signal that fat
+                        burning is happening — not a problem to solve. Let it
+                        pass.
+                      </div>
+                    </div>
+                    <div class="tip-row">
+                      <div class="tip-bullet">→</div>
+                      <div>
+                        <strong>Stay busy.</strong> Hunger is loudest when
+                        you're idle. Schedule demanding work or exercise during
+                        your fasted hours.
+                      </div>
+                    </div>
+                    <div class="tip-row">
+                      <div class="tip-bullet">→</div>
+                      <div>
+                        <strong>Zero Monster / zero-cal drinks.</strong> No
+                        calories, no meaningful insulin response. Fine to use
+                        during a fast, though black coffee is cleaner long-term.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BREAKING YOUR FAST -->
+          <div class="faq-card">
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">
+                What breaks a fast? <span class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a">
+                <div class="faq-a-inner">
+                  <div class="tip-list">
+                    <div class="tip-row">
+                      <div class="tip-bullet">✓</div>
+                      <div>
+                        <strong>These do NOT break your fast:</strong> Water,
+                        black coffee, plain tea, sparkling water, electrolytes
+                        (no sugar), creatine, most zero-calorie drinks.
+                      </div>
+                    </div>
+                    <div class="tip-row">
+                      <div class="tip-bullet">✗</div>
+                      <div>
+                        <strong>These WILL break your fast:</strong> Any
+                        calories, milk or cream in coffee, sweetened drinks,
+                        protein shakes, BCAAs, gum with sugar, most supplements
+                        with fillers.
+                      </div>
+                    </div>
+                    <div class="tip-row">
+                      <div class="tip-bullet">~</div>
+                      <div>
+                        <strong>Gray area:</strong> Artificial sweeteners
+                        (sucralose etc.) don't have calories but may trigger a
+                        minor insulin response in some people. Functionally fine
+                        for most.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CREATINE -->
+          <div class="faq-card">
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">
+                Creatine while fasting <span class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a">
+                <div class="faq-a-inner">
+                  <p>
+                    Creatine has no calories and doesn't trigger an insulin
+                    response — it won't break your fast.
+                  </p>
+                  <p>
+                    Absorption is slightly more efficient when insulin is
+                    elevated (i.e. after eating), so the optimal time is right
+                    when you break your fast, with your meal. For standard daily
+                    dosing the difference is negligible — consistency matters
+                    more than timing.
+                  </p>
+                  <p>
+                    Keep your dose the same (3–5g/day). No adjustment needed for
+                    fasting. Just stay well hydrated — creatine and fasting both
+                    put mild demand on hydration.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SAVE LOCALLY -->
+          <div class="faq-card">
+            <div class="faq-item" onclick="toggleFaq(this)">
+              <div class="faq-q">
+                How to save this app to your desktop
+                <span class="faq-arrow">▼</span>
+              </div>
+              <div class="faq-a">
+                <div class="faq-a-inner">
+                  <p>
+                    This is a self-contained HTML file — no install needed. Save
+                    it once and it works forever offline.
+                  </p>
+                  <div class="install-steps">
+                    <div class="install-step">
+                      <div class="step-num">1</div>
+                      <div>
+                        <strong>Download the file</strong>Right-click the
+                        download link from Claude and save as
+                        <code>fasting-timer.html</code> somewhere permanent
+                        (e.g. your Desktop or Documents folder).
+                      </div>
+                    </div>
+                    <div class="install-step">
+                      <div class="step-num">2</div>
+                      <div>
+                        <strong>Open in Chrome or Brave</strong>Double-click the
+                        file. It opens in your default browser. If it doesn't
+                        open in Chrome, right-click → Open with → Chrome.
+                      </div>
+                    </div>
+                    <div class="install-step">
+                      <div class="step-num">3</div>
+                      <div>
+                        <strong
+                          >Create a desktop shortcut (opens as standalone
+                          app)</strong
+                        >Right-click your desktop → New → Shortcut. In the
+                        location field paste:<br /><br /><code
+                          >"C:\Program
+                          Files\Google\Chrome\Application\chrome.exe"
+                          --app=file:///C:/Users/YOUR_NAME/Desktop/fasting-timer.html</code
+                        ><br /><br />Replace <code>YOUR_NAME</code> with your
+                        Windows username. Name it <em>Fasting Timer</em> and
+                        click Finish.
+                      </div>
+                    </div>
+                    <div class="install-step">
+                      <div class="step-num">4</div>
+                      <div>
+                        <strong>Using Brave instead?</strong>Same steps, just
+                        change the path to:<br /><br /><code
+                          >"C:\Program Files\Brave
+                          Software\Brave-Browser\Application\brave.exe"
+                          --app=file:///C:/Users/YOUR_NAME/Desktop/fasting-timer.html</code
+                        >
+                      </div>
+                    </div>
+                    <div class="install-step">
+                      <div class="step-num">5</div>
+                      <div>
+                        <strong>Pin to taskbar</strong>After opening via the
+                        shortcut, right-click the taskbar icon → Pin to taskbar.
+                        One click to open from now on.
+                      </div>
+                    </div>
+                  </div>
+                  <p style="margin-top: 12px">
+                    Your schedule settings are saved in the browser's local
+                    storage — they persist between sessions as long as you open
+                    the file in the same browser.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end scroll -->
+      </div>
+
+      <!-- ===== CONFIG PAGE ===== -->
+      <div class="page" id="page-config">
+        <div class="header">
+          <button class="nav-btn" onclick="saveAndReturn()">← Save</button>
+          <div class="header-center">
+            <div
+              style="
+                font-family: &quot;Bebas Neue&quot;, sans-serif;
+                font-size: 13px;
+                letter-spacing: 0.4em;
+                color: var(--muted);
+                text-transform: uppercase;
+              "
+            >
+              Configure Schedule
+            </div>
+          </div>
+          <div style="width: 80px"></div>
+        </div>
+
+        <div class="config-card" id="configRows">
+          <!-- injected by JS -->
+        </div>
+
+        <div class="config-card" style="margin-bottom: 16px">
+          <div
+            class="config-row"
+            style="
+              grid-template-columns: 1fr auto;
+              align-items: center;
+              padding: 12px 16px;
+            "
+          >
+            <div style="font-size: 12px; color: var(--text)">
+              Week starts on Sunday
+            </div>
+            <label class="toggle-wrap">
+              <input
+                type="checkbox"
+                id="weekStartMonday"
+                onchange="saveWeekStart(this.checked)"
+              />
+              <span class="toggle-track"
+                ><span class="toggle-thumb"></span
+              ></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="config-actions">
+          <button class="btn-reset" onclick="resetToDefaults()">
+            Reset to Default
+          </button>
+          <button class="btn-save" onclick="saveAndReturn()">
+            Save Schedule
+          </button>
+        </div>
+        <div class="save-confirm" id="saveConfirm"></div>
+      </div>
+    </div>
+
+    <script>
+      const DAYS = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+
+      function loadWeekStartMonday() {
+        try {
+          const val = localStorage.getItem("fasting-week-monday");
+          return val === null ? true : val === "true";
+        } catch (e) {
+          return true;
+        }
+      }
+      function saveWeekStart(val) {
+        // val=true means Sunday first, so weekStartMonday = false
+        try {
+          localStorage.setItem("fasting-week-monday", !val);
+        } catch (e) {}
+        renderConfigRows();
+        renderScheduleTable();
+      }
+      function getDisplayOrder() {
+        return loadWeekStartMonday()
+          ? [1, 2, 3, 4, 5, 6, 0] // Mon first
+          : [0, 1, 2, 3, 4, 5, 6]; // Sun first
+      }
+
+      // Default schedule (Eric's plan)
+      const DEFAULT_SCHEDULE = [
+        { type: "free", eatStart: null, eatEnd: null },
+        { type: "free", eatStart: null, eatEnd: null },
+        { type: "free", eatStart: null, eatEnd: null },
+        { type: "free", eatStart: null, eatEnd: null },
+        { type: "free", eatStart: null, eatEnd: null },
+        { type: "free", eatStart: null, eatEnd: null },
+        { type: "free", eatStart: null, eatEnd: null },
+      ];
+
+      function loadSchedule() {
+        try {
+          const saved = localStorage.getItem("fasting-schedule");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            // Migrate legacy 'fast' type to 'eat'
+            parsed.forEach((d) => {
+              if (d.type === "fast") d.type = "eat";
+            });
+            return parsed;
+          }
+        } catch (e) {}
+        return JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+      }
+
+      function saveSchedule(s) {
+        localStorage.setItem("fasting-schedule", JSON.stringify(s));
+      }
+
+      let schedule = loadSchedule();
+
+      // ── helpers ──────────────────────────────────────────────────────────────────
+      function toMins(timeStr) {
+        if (!timeStr) return null;
+        const [h, m] = timeStr.split(":").map(Number);
+        return h * 60 + m;
+      }
+
+      function fmtTime(timeStr) {
+        if (!timeStr) return "—";
+        const [h, m] = timeStr.split(":").map(Number);
+        const ampm = h >= 12 ? "PM" : "AM";
+        const hr = h % 12 || 12;
+        return `${hr}:${String(m).padStart(2, "0")} ${ampm}`;
+      }
+
+      function formatSecs(totalSeconds) {
+        if (totalSeconds <= 0) return "00:00:00";
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = Math.floor(totalSeconds % 60);
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      }
+
+      // ── metabolic state ───────────────────────────────────────────────────────────
+      function getMetabolicState(hrs) {
+        if (hrs < 4)
+          return {
+            state: "Fed State",
+            desc: "Digesting your last meal. Insulin elevated.",
+          };
+        if (hrs < 12)
+          return {
+            state: "Early Fast",
+            desc: "Blood glucose normalizing. Glycogen being used.",
+          };
+        if (hrs < 16)
+          return {
+            state: "Fat Burning",
+            desc: "Glycogen depleting. Lipolysis ramping up.",
+          };
+        if (hrs < 18)
+          return {
+            state: "Deep Fat Burn",
+            desc: "Significant fat oxidation underway.",
+          };
+        if (hrs < 20)
+          return {
+            state: "Ketosis Onset",
+            desc: "Ketone production beginning. Growth hormone rising.",
+          };
+        if (hrs < 22)
+          return {
+            state: "Ketosis",
+            desc: "Deep fat burning. Autophagy activating.",
+          };
+        return {
+          state: "Peak Autophagy",
+          desc: "Cellular repair and cleanup in full effect. 🔥",
+        };
+      }
+
+      // ── core timer logic ──────────────────────────────────────────────────────────
+      function getCurrentState() {
+        const now = new Date();
+        const dow = now.getDay();
+        const nowMins =
+          now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+        const day = schedule[dow];
+
+        // Free day
+        if (day.type === "free") {
+          return {
+            phase: "eating",
+            label: "Free Day",
+            sub: "eat normally today",
+            progress: 1,
+            hoursIntoFast: 0,
+          };
+        }
+
+        // Eating-type day (has a window, possibly with null start or end meaning "open")
+        const eatStartMins = toMins(day.eatStart);
+        const eatEndMins = toMins(day.eatEnd);
+
+        // Are we inside the eating window right now?
+        const afterStart = eatStartMins === null || nowMins >= eatStartMins;
+        const beforeEnd = eatEndMins === null || nowMins < eatEndMins;
+
+        if (afterStart && beforeEnd) {
+          // Inside eating window
+          if (eatEndMins === null) {
+            // Open-ended — count up from open time
+            const elapsed =
+              eatStartMins !== null
+                ? (nowMins - eatStartMins) * 60
+                : nowMins * 60;
+            return {
+              phase: "eating",
+              label: "Eating Window Open",
+              sub: "open — eat well",
+              progress: 1,
+              hoursIntoFast: 0,
+              remaining: null,
+            };
+          }
+          const total =
+            (eatStartMins !== null ? eatEndMins - eatStartMins : eatEndMins) *
+            60;
+          const elapsed = (nowMins - (eatStartMins || 0)) * 60;
+          const remaining = (eatEndMins - nowMins) * 60;
+          return {
+            phase: "eating",
+            label: "Eating Window Open",
+            sub: "window closes in",
+            remaining,
+            total,
+            progress: elapsed / total,
+            hoursIntoFast: 0,
+          };
+        }
+
+        // We're fasting — find how long until next eating window opens
+        // Walk forward through days (max 7) to find next eatStart
+        let minsUntilEat = null;
+        let fastStartedMinsAgo = null;
+
+        // When did the fast start? — end of today's eating window or end of yesterday's
+        let fastStartedAt = null; // in "absolute" minutes from some reference
+
+        // Find previous eating window end to compute elapsed fast time
+        for (let back = 1; back <= 7; back++) {
+          const prevDow = (dow - back + 7) % 7;
+          const prevDay = schedule[prevDow];
+          if (prevDay.type === "free") {
+            fastStartedMinsAgo = back * 24 * 60 - nowMins;
+            break;
+          } // approximate
+          const prevEnd = toMins(prevDay.eatEnd);
+          if (prevEnd !== null) {
+            fastStartedMinsAgo =
+              (back - 1) * 24 * 60 +
+              (nowMins < prevEnd && back === 1
+                ? 0
+                : 24 * 60 - prevEnd + nowMins);
+            // simpler: minutes since that day's eatEnd
+            if (back === 1) {
+              fastStartedMinsAgo = nowMins - prevEnd; // negative means before it — shouldn't happen here
+              if (fastStartedMinsAgo < 0) fastStartedMinsAgo += 24 * 60;
+            } else {
+              fastStartedMinsAgo =
+                24 * 60 - prevEnd + (back - 2) * 24 * 60 + nowMins;
+            }
+            break;
+          }
+          const prevStart = toMins(prevDay.eatStart);
+          if (prevStart !== null) {
+            // That day had a start-only window (open end), fast "started" at midnight conceptually
+            fastStartedMinsAgo = (back - 1) * 24 * 60 + nowMins;
+            break;
+          }
+        }
+
+        // Find next eating window start
+        for (let fwd = 0; fwd <= 7; fwd++) {
+          const fwdDow = (dow + fwd) % 7;
+          const fwdDay = schedule[fwdDow];
+          if (fwd === 0) {
+            // Today — could be before eatStart
+            if (
+              fwdDay.type !== "free" &&
+              eatStartMins !== null &&
+              nowMins < eatStartMins
+            ) {
+              minsUntilEat = eatStartMins - nowMins;
+              break;
+            }
+            continue;
+          }
+          if (fwdDay.type === "free") {
+            minsUntilEat = fwd * 24 * 60 - nowMins;
+            break;
+          }
+          const nextStart = toMins(fwdDay.eatStart);
+          if (nextStart !== null) {
+            minsUntilEat = fwd * 24 * 60 - nowMins + nextStart;
+            break;
+          } else {
+            // Null start = free from midnight
+            minsUntilEat = fwd * 24 * 60 - nowMins;
+            break;
+          }
+        }
+
+        if (minsUntilEat === null) minsUntilEat = 24 * 60;
+        if (fastStartedMinsAgo === null) fastStartedMinsAgo = 0;
+        if (fastStartedMinsAgo < 0) fastStartedMinsAgo = 0;
+
+        const totalFastMins = fastStartedMinsAgo + minsUntilEat;
+        const progress =
+          totalFastMins > 0 ? fastStartedMinsAgo / totalFastMins : 0;
+
+        return {
+          phase: "fasting",
+          label: "Fasting",
+          sub: "until next eating window",
+          remaining: minsUntilEat * 60,
+          total: totalFastMins * 60,
+          progress: Math.min(Math.max(progress, 0), 1),
+          hoursIntoFast: fastStartedMinsAgo / 60,
+        };
+      }
+
+      // ── schedule table rendering ──────────────────────────────────────────────────
+      function renderScheduleTable() {
+        const dow = new Date().getDay();
+        const state = getCurrentState();
+        const table = document.getElementById("scheduleTable");
+        let html = '<div class="schedule-header">Weekly Schedule</div>';
+
+        for (const i of getDisplayOrder()) {
+          const day = schedule[i];
+          const isToday = i === dow;
+          let rowClass = "";
+          if (isToday)
+            rowClass =
+              state.phase === "eating" ? "today-eating" : "today-fasting";
+
+          let windowText = "";
+          let badgeClass = "badge-free";
+          let badgeText = "Free";
+
+          if (day.type === "free") {
+            windowText = "Normal eating";
+            badgeClass = "badge-free";
+            badgeText = "Open";
+          } else {
+            const s = day.eatStart ? fmtTime(day.eatStart) : "Open";
+            const e = day.eatEnd ? fmtTime(day.eatEnd) : "Open";
+            if (!day.eatStart && day.eatEnd) windowText = `Until ${e}`;
+            else if (day.eatStart && !day.eatEnd) windowText = `From ${s}`;
+            else if (!day.eatStart && !day.eatEnd) windowText = "All day";
+            else windowText = `${s} – ${e}`;
+
+            // Badge: calculate actual fasting ratio from window length
+            const startMins = toMins(day.eatStart);
+            const endMins = toMins(day.eatEnd);
+            const bothSet = startMins !== null && endMins !== null;
+
+            if (!bothSet) {
+              // Open-ended window — can't calculate ratio
+              badgeClass = "badge-free";
+              badgeText = "Open";
+            } else {
+              const eatHrs = Math.round((endMins - startMins) / 60);
+              const fastHrs = 24 - eatHrs;
+              if (eatHrs <= 2) {
+                badgeClass = "badge-fast";
+                badgeText = "OMAD";
+              } else {
+                badgeClass = eatHrs <= 6 ? "badge-fast" : "badge-eat";
+                badgeText = `${fastHrs}:${eatHrs}`;
+              }
+            }
+          }
+
+          html += `<div class="schedule-row ${rowClass}">
       <div class="day-name">${DAYS[i]}</div>
       <div class="window-text">${windowText}</div>
       <div class="badge ${badgeClass}">${badgeText}</div>
     </div>`;
-  }
+        }
 
-  table.innerHTML = html;
-}
+        table.innerHTML = html;
+      }
 
-// ── main update loop ──────────────────────────────────────────────────────────
-function update() {
-  const state = getCurrentState();
-  const countdown   = document.getElementById('countdown');
-  const phaseTitle  = document.getElementById('phaseTitle');
-  const countdownSub= document.getElementById('countdownSub');
-  const progressBar = document.getElementById('progressBar');
-  const timerBlock  = document.getElementById('timerBlock');
-  const statusLabel = document.getElementById('statusLabel');
-  const metaText    = document.getElementById('metaText');
-  const metaDot     = document.getElementById('metaDot');
+      // ── main update loop ──────────────────────────────────────────────────────────
+      function update() {
+        const state = getCurrentState();
+        const countdown = document.getElementById("countdown");
+        const phaseTitle = document.getElementById("phaseTitle");
+        const countdownSub = document.getElementById("countdownSub");
+        const progressBar = document.getElementById("progressBar");
+        const timerBlock = document.getElementById("timerBlock");
+        const statusLabel = document.getElementById("statusLabel");
+        const metaText = document.getElementById("metaText");
+        const metaDot = document.getElementById("metaDot");
 
-  const pct = Math.min(Math.max((state.progress || 0) * 100, 0), 100);
+        const pct = Math.min(Math.max((state.progress || 0) * 100, 0), 100);
 
-  if (state.phase === 'fasting') {
-    countdown.className = 'countdown fasting';
-    progressBar.className = 'progress-bar fasting';
-    statusLabel.className = 'status-label status-fasting';
-    statusLabel.textContent = 'Fasting';
-    phaseTitle.textContent = 'Time Remaining in Fast';
-    countdownSub.textContent = state.sub;
-    countdown.textContent = formatSecs(state.remaining || 0);
+        if (state.phase === "fasting") {
+          countdown.className = "countdown fasting";
+          progressBar.className = "progress-bar fasting";
+          statusLabel.className = "status-label status-fasting";
+          statusLabel.textContent = "Fasting";
+          phaseTitle.textContent = "Time Remaining in Fast";
+          countdownSub.textContent = state.sub;
+          countdown.textContent = formatSecs(state.remaining || 0);
 
-    const meta = getMetabolicState(state.hoursIntoFast);
-    metaText.innerHTML = `<strong>${meta.state}</strong> — ${meta.desc}`;
-    metaDot.style.background = 'var(--fasting)';
-  } else {
-    countdown.className = 'countdown eating';
-    progressBar.className = 'progress-bar eating';
-    statusLabel.className = 'status-label status-eating';
-    statusLabel.textContent = 'Eating Window';
-    phaseTitle.textContent = state.label;
-    countdownSub.textContent = state.sub;
-    countdown.textContent = state.remaining ? formatSecs(state.remaining) : '—';
+          const meta = getMetabolicState(state.hoursIntoFast);
+          metaText.innerHTML = `<strong>${meta.state}</strong> — ${meta.desc}`;
+          metaDot.style.background = "var(--fasting)";
+        } else {
+          countdown.className = "countdown eating";
+          progressBar.className = "progress-bar eating";
+          statusLabel.className = "status-label status-eating";
+          statusLabel.textContent = "Eating Window";
+          phaseTitle.textContent = state.label;
+          countdownSub.textContent = state.sub;
+          countdown.textContent = state.remaining
+            ? formatSecs(state.remaining)
+            : "—";
 
-    metaText.innerHTML = `<strong>Eating Window</strong> — Prioritize protein and hit your targets.`;
-    metaDot.style.background = 'var(--eating)';
-  }
+          metaText.innerHTML = `<strong>Eating Window</strong> — Prioritize protein and hit your targets.`;
+          metaDot.style.background = "var(--eating)";
+        }
 
-  timerBlock.style.background = `linear-gradient(to right, ${state.phase === 'fasting' ? 'var(--fasting)' : 'var(--eating)'} ${pct}%, transparent ${pct}%) top / 100% 2px no-repeat, var(--surface)`;
-  progressBar.style.width = pct + '%';
+        timerBlock.style.background = `linear-gradient(to right, ${state.phase === "fasting" ? "var(--fasting)" : "var(--eating)"} ${pct}%, transparent ${pct}%) top / 100% 2px no-repeat, var(--surface)`;
+        progressBar.style.width = pct + "%";
 
-  document.getElementById('currentTime').textContent = new Date().toLocaleTimeString();
-  renderScheduleTable();
-}
+        document.getElementById("currentTime").textContent =
+          new Date().toLocaleTimeString();
+        renderScheduleTable();
+      }
 
-// ── config page ───────────────────────────────────────────────────────────────
-function renderConfigRows() {
-  const container = document.getElementById('configRows');
-  // Sync checkbox state
-  const cb = document.getElementById('weekStartMonday');
-  if (cb) cb.checked = !loadWeekStartMonday();
+      // ── config page ───────────────────────────────────────────────────────────────
+      function renderConfigRows() {
+        const container = document.getElementById("configRows");
+        // Sync checkbox state
+        const cb = document.getElementById("weekStartMonday");
+        if (cb) cb.checked = !loadWeekStartMonday();
 
-  let html = '';
-  for (const i of getDisplayOrder()) {
-    const day = schedule[i];
-    const eatActive  = day.type === 'eat'  ? 'active-eat'  : '';
-    const freeActive = day.type === 'free' ? 'active-free' : '';
+        let html = "";
+        for (const i of getDisplayOrder()) {
+          const day = schedule[i];
+          const eatActive = day.type === "eat" ? "active-eat" : "";
+          const freeActive = day.type === "free" ? "active-free" : "";
 
-    const startVal = day.eatStart || '';
-    const endVal   = day.eatEnd   || '';
+          const startVal = day.eatStart || "";
+          const endVal = day.eatEnd || "";
 
-    const showTimes = day.type !== 'free';
-    const timesDisplay = showTimes ? '' : 'style="display:none"';
+          const showTimes = day.type !== "free";
+          const timesDisplay = showTimes ? "" : 'style="display:none"';
 
-    html += `
+          html += `
     <div class="config-row" id="cfg-row-${i}">
       <div class="config-day-label">${DAYS[i]}</div>
       <div class="config-fields">
@@ -1229,153 +1725,181 @@ function renderConfigRows() {
         </div>
       </div>
     </div>`;
-  }
+        }
 
-  container.innerHTML = html;
-}
+        container.innerHTML = html;
+      }
 
-function setDayType(dow, type) {
-  schedule[dow].type = type;
-  ['eat','free'].forEach(t => {
-    const btn = document.getElementById(`btn-${t}-${dow}`);
-    if (btn) btn.className = 'type-btn' + (t === type ? ` active-${t}` : '');
-  });
-  document.getElementById(`times-${dow}`).style.display = type === 'free' ? 'none' : '';
-}
+      function setDayType(dow, type) {
+        schedule[dow].type = type;
+        ["eat", "free"].forEach((t) => {
+          const btn = document.getElementById(`btn-${t}-${dow}`);
+          if (btn)
+            btn.className = "type-btn" + (t === type ? ` active-${t}` : "");
+        });
+        document.getElementById(`times-${dow}`).style.display =
+          type === "free" ? "none" : "";
+      }
 
-function updateTime(dow) {
-  schedule[dow].eatStart = document.getElementById(`start-${dow}`).value || null;
-  schedule[dow].eatEnd   = document.getElementById(`end-${dow}`).value   || null;
-}
+      function updateTime(dow) {
+        schedule[dow].eatStart =
+          document.getElementById(`start-${dow}`).value || null;
+        schedule[dow].eatEnd =
+          document.getElementById(`end-${dow}`).value || null;
+      }
 
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(`page-${name}`).classList.add('active');
-  if (name === 'config') renderConfigRows();
-}
+      function showPage(name) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document.getElementById(`page-${name}`).classList.add("active");
+        if (name === "config") renderConfigRows();
+      }
 
-function toggleFaq(item) {
-  item.classList.toggle('open');
-}
+      function toggleFaq(item) {
+        item.classList.toggle("open");
+      }
 
-function saveAndReturn() {
-  // Sync any unsaved input values
-  for (let i = 0; i < 7; i++) {
-    const startEl = document.getElementById(`start-${i}`);
-    const endEl   = document.getElementById(`end-${i}`);
-    if (startEl) schedule[i].eatStart = startEl.value || null;
-    if (endEl)   schedule[i].eatEnd   = endEl.value   || null;
-  }
-  saveSchedule(schedule);
-  const confirm = document.getElementById('saveConfirm');
-  confirm.textContent = '✓ Saved';
-  setTimeout(() => { confirm.textContent = ''; }, 1500);
-  showPage('timer');
-}
+      function saveAndReturn() {
+        // Sync any unsaved input values
+        for (let i = 0; i < 7; i++) {
+          const startEl = document.getElementById(`start-${i}`);
+          const endEl = document.getElementById(`end-${i}`);
+          if (startEl) schedule[i].eatStart = startEl.value || null;
+          if (endEl) schedule[i].eatEnd = endEl.value || null;
+        }
+        saveSchedule(schedule);
+        const confirm = document.getElementById("saveConfirm");
+        confirm.textContent = "✓ Saved";
+        setTimeout(() => {
+          confirm.textContent = "";
+        }, 1500);
+        showPage("timer");
+      }
 
-function resetToDefaults() {
-  schedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-  renderConfigRows();
-}
+      function resetToDefaults() {
+        schedule = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
+        renderConfigRows();
+      }
 
-// ── boot ──────────────────────────────────────────────────────────────────────
-update();
-setInterval(update, 1000);
+      // ── boot ──────────────────────────────────────────────────────────────────────
+      update();
+      setInterval(update, 1000);
 
-// ── themes ────────────────────────────────────────────────────────────────────
-const THEMES = [
-  {
-    id: 'green',
-    name: 'Acid Green',
-    desc: 'Default',
-    fasting: '#c8f565',
-    eating:  '#65c8f5',
-    fastingBg: '#1a2200', fastingBorder: '#2d3d00',
-    eatingBg:  '#001a22', eatingBorder:  '#003d52',
-  },
-  {
-    id: 'red',
-    name: 'Infrared',
-    desc: 'High intensity',
-    fasting: '#d62839',
-    eating:  '#e8941a',
-    fastingBg: '#220008', fastingBorder: '#3d0010',
-    eatingBg:  '#221200', eatingBorder:  '#3d2400',
-  },
-  {
-    id: 'blue',
-    name: 'Arctic',
-    desc: 'Cool & calm',
-    fasting: '#65b8f5',
-    eating:  '#a065f5',
-    fastingBg: '#001522', fastingBorder: '#002a3d',
-    eatingBg:  '#0d0022', eatingBorder:  '#1a003d',
-  },
-  {
-    id: 'amber',
-    name: 'Amber',
-    desc: 'Warm & focused',
-    fasting: '#f5a623',
-    eating:  '#f5e065',
-    fastingBg: '#221200', fastingBorder: '#3d2200',
-    eatingBg:  '#221e00', eatingBorder:  '#3d3800',
-  },
-  {
-    id: 'pink',
-    name: 'Neon Rose',
-    desc: 'Bold & bright',
-    fasting: '#f565c8',
-    eating:  '#c865f5',
-    fastingBg: '#220018', fastingBorder: '#3d002d',
-    eatingBg:  '#160022', eatingBorder:  '#2a003d',
-  },
-  {
-    id: 'cyan',
-    name: 'Cyber Cyan',
-    desc: 'Matrix vibes',
-    fasting: '#00ffe0',
-    eating:  '#00d4ff',
-    fastingBg: '#00221d', fastingBorder: '#003d35',
-    eatingBg:  '#001e22', eatingBorder:  '#003040',
-  },
-  {
-    id: 'white',
-    name: 'Ghost',
-    desc: 'Monochrome',
-    fasting: '#e8e8e8',
-    eating:  '#aaaaaa',
-    fastingBg: '#1a1a1a', fastingBorder: '#2d2d2d',
-    eatingBg:  '#141414', eatingBorder:  '#222222',
-  },
-  {
-    id: 'gold',
-    name: 'Gold',
-    desc: 'Premium feel',
-    fasting: '#ffd700',
-    eating:  '#ffaa00',
-    fastingBg: '#1f1a00', fastingBorder: '#3d3400',
-    eatingBg:  '#1f1000', eatingBorder:  '#3d2000',
-  },
-];
+      // ── themes ────────────────────────────────────────────────────────────────────
+      const THEMES = [
+        {
+          id: "green",
+          name: "Acid Green",
+          desc: "Default",
+          fasting: "#c8f565",
+          eating: "#65c8f5",
+          fastingBg: "#1a2200",
+          fastingBorder: "#2d3d00",
+          eatingBg: "#001a22",
+          eatingBorder: "#003d52",
+        },
+        {
+          id: "red",
+          name: "Infrared",
+          desc: "High intensity",
+          fasting: "#d62839",
+          eating: "#e8941a",
+          fastingBg: "#220008",
+          fastingBorder: "#3d0010",
+          eatingBg: "#221200",
+          eatingBorder: "#3d2400",
+        },
+        {
+          id: "blue",
+          name: "Arctic",
+          desc: "Cool & calm",
+          fasting: "#65b8f5",
+          eating: "#a065f5",
+          fastingBg: "#001522",
+          fastingBorder: "#002a3d",
+          eatingBg: "#0d0022",
+          eatingBorder: "#1a003d",
+        },
+        {
+          id: "amber",
+          name: "Amber",
+          desc: "Warm & focused",
+          fasting: "#f5a623",
+          eating: "#f5e065",
+          fastingBg: "#221200",
+          fastingBorder: "#3d2200",
+          eatingBg: "#221e00",
+          eatingBorder: "#3d3800",
+        },
+        {
+          id: "pink",
+          name: "Neon Rose",
+          desc: "Bold & bright",
+          fasting: "#f565c8",
+          eating: "#c865f5",
+          fastingBg: "#220018",
+          fastingBorder: "#3d002d",
+          eatingBg: "#160022",
+          eatingBorder: "#2a003d",
+        },
+        {
+          id: "cyan",
+          name: "Cyber Cyan",
+          desc: "Matrix vibes",
+          fasting: "#00ffe0",
+          eating: "#00d4ff",
+          fastingBg: "#00221d",
+          fastingBorder: "#003d35",
+          eatingBg: "#001e22",
+          eatingBorder: "#003040",
+        },
+        {
+          id: "white",
+          name: "Ghost",
+          desc: "Monochrome",
+          fasting: "#e8e8e8",
+          eating: "#aaaaaa",
+          fastingBg: "#1a1a1a",
+          fastingBorder: "#2d2d2d",
+          eatingBg: "#141414",
+          eatingBorder: "#222222",
+        },
+        {
+          id: "gold",
+          name: "Gold",
+          desc: "Premium feel",
+          fasting: "#ffd700",
+          eating: "#ffaa00",
+          fastingBg: "#1f1a00",
+          fastingBorder: "#3d3400",
+          eatingBg: "#1f1000",
+          eatingBorder: "#3d2000",
+        },
+      ];
 
-function loadTheme() {
-  try { return localStorage.getItem('fasting-theme') || 'green'; } catch(e) { return 'green'; }
-}
+      function loadTheme() {
+        try {
+          return localStorage.getItem("fasting-theme") || "green";
+        } catch (e) {
+          return "green";
+        }
+      }
 
-function applyTheme(id) {
-  const t = THEMES.find(t => t.id === id) || THEMES[0];
-  const r = document.documentElement.style;
-  r.setProperty('--fasting', t.fasting);
-  r.setProperty('--eating',  t.eating);
-  r.setProperty('--accent',  t.fasting);
-  // Update status badge colors dynamically via injected style
-  let styleEl = document.getElementById('dynamic-theme-style');
-  if (!styleEl) {
-    styleEl = document.createElement('style');
-    styleEl.id = 'dynamic-theme-style';
-    document.head.appendChild(styleEl);
-  }
-  styleEl.textContent = `
+      function applyTheme(id) {
+        const t = THEMES.find((t) => t.id === id) || THEMES[0];
+        const r = document.documentElement.style;
+        r.setProperty("--fasting", t.fasting);
+        r.setProperty("--eating", t.eating);
+        r.setProperty("--accent", t.fasting);
+        // Update status badge colors dynamically via injected style
+        let styleEl = document.getElementById("dynamic-theme-style");
+        if (!styleEl) {
+          styleEl = document.createElement("style");
+          styleEl.id = "dynamic-theme-style";
+          document.head.appendChild(styleEl);
+        }
+        styleEl.textContent = `
     .status-fasting { background: ${t.fastingBg}; color: ${t.fasting}; border-color: ${t.fastingBorder}; }
     .status-eating  { background: ${t.eatingBg};  color: ${t.eating};  border-color: ${t.eatingBorder}; }
     .badge-fast { background: ${t.fastingBg}; color: ${t.fasting}; }
@@ -1396,16 +1920,19 @@ function applyTheme(id) {
     .save-confirm { color: ${t.fasting}; }
     code { color: ${t.eating}; }
   `;
-  try { localStorage.setItem('fasting-theme', id); } catch(e) {}
-  // Re-render theme grid to update selected state
-  renderThemeGrid(id);
-}
+        try {
+          localStorage.setItem("fasting-theme", id);
+        } catch (e) {}
+        // Re-render theme grid to update selected state
+        renderThemeGrid(id);
+      }
 
-function renderThemeGrid(activeId) {
-  const grid = document.getElementById('themeGrid');
-  if (!grid) return;
-  grid.innerHTML = THEMES.map(t => `
-    <button class="theme-swatch ${t.id === activeId ? 'selected' : ''}"
+      function renderThemeGrid(activeId) {
+        const grid = document.getElementById("themeGrid");
+        if (!grid) return;
+        grid.innerHTML = THEMES.map(
+          (t) => `
+    <button class="theme-swatch ${t.id === activeId ? "selected" : ""}"
             style="color:${t.fasting}"
             onclick="applyTheme('${t.id}')">
       <div class="swatch-preview">
@@ -1415,25 +1942,26 @@ function renderThemeGrid(activeId) {
       <span class="swatch-name" style="color:${t.fasting}">${t.name}</span>
       <span class="swatch-desc">${t.desc}</span>
     </button>
-  `).join('');
-}
+  `,
+        ).join("");
+      }
 
-function openTheme() {
-  const activeId = loadTheme();
-  renderThemeGrid(activeId);
-  document.getElementById('themeOverlay').classList.add('open');
-}
+      function openTheme() {
+        const activeId = loadTheme();
+        renderThemeGrid(activeId);
+        document.getElementById("themeOverlay").classList.add("open");
+      }
 
-function closeTheme() {
-  document.getElementById('themeOverlay').classList.remove('open');
-}
+      function closeTheme() {
+        document.getElementById("themeOverlay").classList.remove("open");
+      }
 
-function closeThemeIfBg(e) {
-  if (e.target === document.getElementById('themeOverlay')) closeTheme();
-}
+      function closeThemeIfBg(e) {
+        if (e.target === document.getElementById("themeOverlay")) closeTheme();
+      }
 
-// Apply saved theme on load
-applyTheme(loadTheme());
-</script>
-</body>
+      // Apply saved theme on load
+      applyTheme(loadTheme());
+    </script>
+  </body>
 </html>
