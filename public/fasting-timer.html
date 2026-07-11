@@ -904,6 +904,7 @@
           <div style="display: flex; gap: 6px">
             <button class="nav-btn" onclick="showPage('faq')">? FAQ</button>
             <button class="nav-btn" onclick="openTheme()">◐ Theme</button>
+            <button class="nav-btn" id="shareBtn" onclick="shareSchedule()">↗ Share</button>
             <button class="nav-btn" onclick="showPage('config')">
               ⚙ Config
             </button>
@@ -1782,7 +1783,45 @@
         renderConfigRows();
       }
 
+      // ── share ─────────────────────────────────────────────────────────────────────
+      function buildShareUrl() {
+        const encoded = btoa(JSON.stringify(schedule));
+        const url = new URL(window.location.href);
+        url.search = "";
+        url.searchParams.set("s", encoded);
+        return url.toString();
+      }
+
+      function shareSchedule() {
+        const url = buildShareUrl();
+        navigator.clipboard.writeText(url).then(() => {
+          const btn = document.getElementById("shareBtn");
+          const orig = btn.textContent;
+          btn.textContent = "✓ Copied";
+          setTimeout(() => { btn.textContent = orig; }, 2000);
+        }).catch(() => {
+          prompt("Copy this link:", url);
+        });
+      }
+
+      function loadScheduleFromUrl() {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const s = params.get("s");
+          if (!s) return false;
+          const parsed = JSON.parse(atob(s));
+          if (!Array.isArray(parsed) || parsed.length !== 7) return false;
+          parsed.forEach((d) => { if (d.type === "fast") d.type = "eat"; });
+          schedule = parsed;
+          saveSchedule(schedule);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
       // ── boot ──────────────────────────────────────────────────────────────────────
+      loadScheduleFromUrl();
       update();
       setInterval(update, 1000);
 
