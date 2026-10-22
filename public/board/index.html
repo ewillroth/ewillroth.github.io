@@ -6,19 +6,25 @@
     <title>Cardboard</title>
     <script>
       // Apply the saved theme before first paint to avoid a flash.
+      // Mirrors resolveTheme() in src/store/settings.ts, including the v1 `theme` format.
       (function () {
-        var theme = 'auto';
+        var s = {};
         try {
-          theme = JSON.parse(localStorage.getItem('cardboard.settings') || '{}').state.theme || 'auto';
+          s = JSON.parse(localStorage.getItem('cardboard.settings') || '{}').state || {};
         } catch (e) {}
-        if (theme === 'auto') {
-          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'studio';
+        var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme;
+        if (s.mode) {
+          var dark = s.mode === 'dark' || (s.mode === 'system' && systemDark);
+          theme = dark ? s.darkTheme : s.lightTheme;
+        } else if (s.theme && s.theme !== 'auto') {
+          theme = s.theme;
         }
-        document.documentElement.dataset.theme = theme;
+        document.documentElement.dataset.theme = theme || (systemDark ? 'night' : 'studio');
       })();
     </script>
-    <script type="module" crossorigin src="/board/assets/index-CqlG075O.js"></script>
-    <link rel="stylesheet" crossorigin href="/board/assets/index-BN2as-HH.css">
+    <script type="module" crossorigin src="/board/assets/index-B9BbJOTu.js"></script>
+    <link rel="stylesheet" crossorigin href="/board/assets/index-BjHnfszt.css">
   </head>
   <body>
     <div id="root"></div>
