@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cardboard</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a flash.
+      (function () {
+        var theme = 'auto';
+        try {
+          theme = JSON.parse(localStorage.getItem('cardboard.settings') || '{}').state.theme || 'auto';
+        } catch (e) {}
+        if (theme === 'auto') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'studio';
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <script type="module" crossorigin src="/board/assets/index-DthYYOf-.js"></script>
+    <link rel="stylesheet" crossorigin href="/board/assets/index-Cbjm-lId.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
