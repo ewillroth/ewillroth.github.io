@@ -1,6 +1,7 @@
 import React from "react";
 import BearIcon from "./assets/images/bear.avif";
 import "./reset.css";
+import "./App.css";
 
 const App = () => {
   return (
